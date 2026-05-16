@@ -1,0 +1,38 @@
+# electron-builder config for packaging installers.
+# Wired up in Phase 3 (Production Polish). Placeholder for now.
+
+appId: app.ai-keyword-video-factory
+productName: AI Keyword Video Factory
+copyright: Copyright © 2026
+
+directories:
+  buildResources: build
+  output: release/${version}
+
+files:
+  - out/**/*
+  - package.json
+
+# Bundle FFmpeg and the Python sidecar as extra resources at install time.
+# Chromium is NOT bundled — Playwright lazy-installs on first run.
+extraResources:
+  - from: ../../backend/dist
+    to: backend
+    filter:
+      - "**/*"
+  - from: ../../assets
+    to: assets
+    filter:
+      - "**/*"
+
+win:
+  target: nsis
+  artifactName: ${productName}-${version}-setup.${ext}
+
+mac:
+  target: dmg
+  category: public.app-category.video
+
+linux:
+  target: AppImage
+  category: AudioVideo

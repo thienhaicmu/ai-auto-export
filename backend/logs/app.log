@@ -1,0 +1,8 @@
+14:46:33 | INFO     | app.api.render | Starting mock render job job_02abbdc8 for keyword 'karen'
+14:46:58 | INFO     | app.api.ws | WS client connected for job job_02abbdc8
+14:47:23 | INFO     | app.api.ws | WS client disconnected for job job_02abbdc8
+15:20:21 | INFO     | app.api.render | Starting mock render job job_a5dd6b9e for keyword 'karen'
+15:20:30 | INFO     | app.api.render | Starting mock render job job_db51d8d6 for keyword 'karen'
+15:20:41 | INFO     | app.api.render | Starting mock render job job_f8440a3b for keyword 'karen'
+15:20:41 | INFO     | app.api.ws | WS client connected for job job_f8440a3b
+15:21:15 | INFO     | app.api.ws | WS client disconnected for job job_f8440a3b

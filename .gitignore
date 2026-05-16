@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+apps/desktop/out/
+apps/desktop/dist/
+apps/desktop/.vite/
+apps/desktop/release/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+backend/.venv/
+
+# App runtime
+logs/*.log
+logs/*.jsonl
+temp/job_*/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+*.swp
+
+# Playwright Chromium cache (lazy-installed)
+backend/.playwright/
+
+# Large bundled assets (tracked via LFS or downloaded)
+assets/fonts/*.ttf
+assets/fonts/*.otf
+assets/music/*.mp3

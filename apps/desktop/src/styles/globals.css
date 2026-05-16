@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0A0A0B;
+  color: #F5F5F7;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2A2A33; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #3A3A45; }
+
+/* Draggable title bar */
+.app-drag { -webkit-app-region: drag; }
+.app-no-drag { -webkit-app-region: no-drag; }
+
+.tabular { font-variant-numeric: tabular-nums; }
+.glow-accent { box-shadow: 0 0 24px rgba(124,92,255,0.35); }
+
+@keyframes nodePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(124,92,255,0); }
+  50%       { box-shadow: 0 0 0 6px rgba(124,92,255,0.25); }
+}
+.node-active { animation: nodePulse 1.6s ease-in-out infinite; }
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card-enter { animation: cardEnter 280ms cubic-bezier(0.22,1,0.36,1) both; }

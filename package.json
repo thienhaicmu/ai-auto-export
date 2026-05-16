@@ -1,0 +1,13 @@
+{
+  "name": "ai-keyword-video-factory",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/desktop"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/desktop",
+    "build": "npm run build --workspace=apps/desktop",
+    "dev:backend": "cd backend && uvicorn app.main:app --reload --host 127.0.0.1 --port 8765"
+  }
+}

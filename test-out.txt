@@ -1,0 +1,5 @@
+
+electron type: object
+app type: object
+BrowserWindow type: function
+SUCCESS: app.whenReady() resolved
