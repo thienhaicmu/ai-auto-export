@@ -35,5 +35,5 @@ backend/.playwright/
 assets/fonts/*.ttf
 assets/fonts/*.otf
 assets/music/*.mp3
-*.mp3
-backend/temp/*.png
+backend/temp/*/*/*.png
+backend/temp/*/*/*.wav

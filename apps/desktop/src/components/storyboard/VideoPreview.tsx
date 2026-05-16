@@ -4,6 +4,14 @@ import { Play, ExternalLink, Film } from 'lucide-react'
 import { usePreviewStore } from '../../store/previewStore'
 import { useJobStore } from '../../store/jobStore'
 
+function toFileUrl(filePath: string): string {
+  const fwd = filePath.replace(/\\/g, '/')
+  // Windows absolute path: D:/... → file:///D:/...
+  if (/^[A-Za-z]:/.test(fwd)) return `file:///${fwd}`
+  // Unix absolute path: /... → file:///...
+  return `file://${fwd}`
+}
+
 export function VideoPreview() {
   const selectedId = usePreviewStore((s) => s.selectedVariantId)
   const setCurrentTime = usePreviewStore((s) => s.setCurrentTime)
@@ -62,8 +70,9 @@ export function VideoPreview() {
                   onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                   aria-label="Video preview"
                 >
-                  {/* file:// path works in Electron renderer */}
-                  <source src={`file://${outputPath}`} type="video/mp4" />
+                  {/* Normalize path for file:// protocol:
+                      Windows D:\path\file.mp4 → file:///D:/path/file.mp4 */}
+                  <source src={toFileUrl(outputPath)} type="video/mp4" />
                 </video>
               </div>
 

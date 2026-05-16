@@ -1,6 +1,1148 @@
-INFO:     Started server process [16580]
+INFO:     Started server process [44424]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
-ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8765): [winerror 10048] only one usage of each socket address (protocol/network address/port) is normally permitted
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
+INFO:     Uvicorn running on http://127.0.0.1:8765 (Press CTRL+C to quit)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 80: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 165, in _run_pipeline
+    frame_dirs = await render_html_scenes(
+  File "D:\ai-auto-export\backend\app\renderer\html_renderer.py", line 210, in render_html_scenes
+    log.info("Scene %d: %d frames captured \u2192 %s", scene.index, n_frames, frames_dir)
+Message: 'Scene %d: %d frames captured \u2192 %s'
+Arguments: (0, 180, WindowsPath('D:/ai-auto-export/backend/temp/job_c4cc2c81/scene_00/frames'))
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 80: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 165, in _run_pipeline
+    frame_dirs = await render_html_scenes(
+  File "D:\ai-auto-export\backend\app\renderer\html_renderer.py", line 210, in render_html_scenes
+    log.info("Scene %d: %d frames captured -> %s", scene.index, n_frames, frames_dir)
+Message: 'Scene %d: %d frames captured \u2192 %s'
+Arguments: (1, 180, WindowsPath('D:/ai-auto-export/backend/temp/job_c4cc2c81/scene_01/frames'))
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 80: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 165, in _run_pipeline
+    frame_dirs = await render_html_scenes(
+  File "D:\ai-auto-export\backend\app\renderer\html_renderer.py", line 210, in render_html_scenes
+    log.info("Scene %d: %d frames captured -> %s", scene.index, n_frames, frames_dir)
+Message: 'Scene %d: %d frames captured \u2192 %s'
+Arguments: (2, 180, WindowsPath('D:/ai-auto-export/backend/temp/job_c4cc2c81/scene_02/frames'))
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 80: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 165, in _run_pipeline
+    frame_dirs = await render_html_scenes(
+  File "D:\ai-auto-export\backend\app\renderer\html_renderer.py", line 210, in render_html_scenes
+    log.info("Scene %d: %d frames captured -> %s", scene.index, n_frames, frames_dir)
+Message: 'Scene %d: %d frames captured \u2192 %s'
+Arguments: (3, 180, WindowsPath('D:/ai-auto-export/backend/temp/job_c4cc2c81/scene_03/frames'))
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 80: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 165, in _run_pipeline
+    frame_dirs = await render_html_scenes(
+  File "D:\ai-auto-export\backend\app\renderer\html_renderer.py", line 210, in render_html_scenes
+    log.info("Scene %d: %d frames captured -> %s", scene.index, n_frames, frames_dir)
+Message: 'Scene %d: %d frames captured \u2192 %s'
+Arguments: (4, 180, WindowsPath('D:/ai-auto-export/backend/temp/job_c4cc2c81/scene_04/frames'))
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 83: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 173, in _run_pipeline
+    log.info("Starting FFmpeg encode for job %s \u2192 %s", job_id, final_output_path)
+Message: 'Starting FFmpeg encode for job %s \u2192 %s'
+Arguments: ('job_c4cc2c81', WindowsPath('d:/ai-auto-export/backend/output/karen_viral_01.mp4'))
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 69: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 174, in _run_pipeline
+    output_path = await encode(
+  File "D:\ai-auto-export\backend\app\renderer\ffmpeg_encoder.py", line 112, in encode
+    log.info("Encoding scene %d \u2192 %s", i, clip_path.name)
+Message: 'Encoding scene %d \u2192 %s'
+Arguments: (0, 'scene_00.mp4')
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 69: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 174, in _run_pipeline
+    output_path = await encode(
+  File "D:\ai-auto-export\backend\app\renderer\ffmpeg_encoder.py", line 112, in encode
+    log.info("Encoding scene %d \u2192 %s", i, clip_path.name)
+Message: 'Encoding scene %d \u2192 %s'
+Arguments: (1, 'scene_01.mp4')
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 69: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 174, in _run_pipeline
+    output_path = await encode(
+  File "D:\ai-auto-export\backend\app\renderer\ffmpeg_encoder.py", line 112, in encode
+    log.info("Encoding scene %d \u2192 %s", i, clip_path.name)
+Message: 'Encoding scene %d \u2192 %s'
+Arguments: (2, 'scene_02.mp4')
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 69: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 174, in _run_pipeline
+    output_path = await encode(
+  File "D:\ai-auto-export\backend\app\renderer\ffmpeg_encoder.py", line 112, in encode
+    log.info("Encoding scene %d \u2192 %s", i, clip_path.name)
+Message: 'Encoding scene %d \u2192 %s'
+Arguments: (3, 'scene_03.mp4')
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 69: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 174, in _run_pipeline
+    output_path = await encode(
+  File "D:\ai-auto-export\backend\app\renderer\ffmpeg_encoder.py", line 112, in encode
+    log.info("Encoding scene %d \u2192 %s", i, clip_path.name)
+Message: 'Encoding scene %d \u2192 %s'
+Arguments: (4, 'scene_04.mp4')
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 74: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 174, in _run_pipeline
+    output_path = await encode(
+  File "D:\ai-auto-export\backend\app\renderer\ffmpeg_encoder.py", line 151, in encode
+    log.info("Concatenating %d clips \u2192 %s", len(scene_clips), combined_path.name)
+Message: 'Concatenating %d clips \u2192 %s'
+Arguments: (5, 'combined.mp4')
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 65: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 174, in _run_pipeline
+    output_path = await encode(
+  File "D:\ai-auto-export\backend\app\renderer\ffmpeg_encoder.py", line 218, in encode
+    log.info("Final encode \u2192 %s", output_path)
+Message: 'Final encode \u2192 %s'
+Arguments: (WindowsPath('d:/ai-auto-export/backend/output/karen_viral_01.mp4'),)
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Python314\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 65: character maps to <undefined>
+Call stack:
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\__main__.py", line 4, in <module>
+    uvicorn.main()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1514, in __call__
+    return self.main(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1435, in main
+    rv = self.invoke(ctx)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 1298, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\click\core.py", line 853, in invoke
+    return callback(*args, **kwargs)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 441, in main
+    run(
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\main.py", line 620, in run
+    server.run()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\server.py", line 75, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+  File "C:\Python314\Lib\asyncio\runners.py", line 204, in run
+    return runner.run(main)
+  File "C:\Python314\Lib\asyncio\runners.py", line 127, in run
+    return self._loop.run_until_complete(task)
+  File "C:\Python314\Lib\asyncio\base_events.py", line 706, in run_until_complete
+    self.run_forever()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 677, in run_forever
+    self._run_once()
+  File "C:\Python314\Lib\asyncio\base_events.py", line 2046, in _run_once
+    handle._run()
+  File "C:\Python314\Lib\asyncio\events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 421, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 56, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\cors.py", line 88, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\fastapi\routing.py", line 121, in app
+    await response(scope, receive, send)
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\responses.py", line 170, in __call__
+    await self.background()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 36, in __call__
+    await task()
+  File "D:\ai-auto-export\backend\.venv\Lib\site-packages\starlette\background.py", line 21, in __call__
+    await self.func(*self.args, **self.kwargs)
+  File "D:\ai-auto-export\backend\app\api\render.py", line 189, in _run_pipeline
+    log.info("Job %s complete \u2192 %s", job_id, output_path)
+Message: 'Job %s complete \u2192 %s'
+Arguments: ('job_c4cc2c81', WindowsPath('d:/ai-auto-export/backend/output/karen_viral_01.mp4'))

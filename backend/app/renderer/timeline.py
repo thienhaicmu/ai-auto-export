@@ -14,21 +14,6 @@ def fixture_timeline(
     duration_seconds: int = 30,
 ) -> Timeline:
     """Phase 1: returns a hardcoded 5-scene viral timeline for smoke-testing."""
-    scenes = [
-        Scene(
-            index=i,
-            start=i * (duration_seconds / 5),
-            end=(i + 1) * (duration_seconds / 5),
-            template="viral",
-            props=SceneProps(
-                headline=headlines[i],
-                subhead=subheads[i],
-                animation_seed=1000 + i * 37,
-            ),
-        )
-        for i in range(5)
-    ]
-
     headlines = [
         keyword.upper(),
         "WHAT THEY",
@@ -44,9 +29,22 @@ def fixture_timeline(
         "Watch till the end",
     ]
 
-    for i, scene in enumerate(scenes):
-        scene.props.headline = headlines[i]
-        scene.props.subhead = subheads[i]
+    scene_dur = duration_seconds / 5
+    scenes = [
+        Scene(
+            index=i,
+            start=i * scene_dur,
+            end=(i + 1) * scene_dur,
+            template="viral",
+            props=SceneProps(
+                headline=headlines[i],
+                subhead=subheads[i],
+                animation_seed=1000 + i * 37,
+                highlight_word_indices=[0] if i == 0 else [],
+            ),
+        )
+        for i in range(5)
+    ]
 
     return Timeline(
         job_id=job_id,
@@ -58,8 +56,8 @@ def fixture_timeline(
         fps=30,
         duration_seconds=duration_seconds,
         audio=AudioConfig(
-            music_bed="assets/music/viral_pulse.mp3",
-            music_gain_db=-22,
+            music_bed=None,
+            music_gain_db=-22.0,
         ),
         subtitles=SubtitleConfig(style="viral_bold"),
         scenes=scenes,

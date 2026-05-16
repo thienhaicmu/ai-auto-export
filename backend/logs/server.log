@@ -1,0 +1,7 @@
+15:51:14 | INFO     | app.api.render | Render job job_c4cc2c81: keyword='karen' dur=30s
+15:51:15 | INFO     | app.api.render | Starting HTML frame capture for job job_c4cc2c81
+15:51:18 | INFO     | app.renderer.html_renderer | Capturing scene 1/5: 180 frames @ 1080x1920 (0.00s–6.00s)
+15:53:31 | INFO     | app.renderer.html_renderer | Capturing scene 2/5: 180 frames @ 1080x1920 (6.00s–12.00s)
+15:55:41 | INFO     | app.renderer.html_renderer | Capturing scene 3/5: 180 frames @ 1080x1920 (12.00s–18.00s)
+15:57:53 | INFO     | app.renderer.html_renderer | Capturing scene 4/5: 180 frames @ 1080x1920 (18.00s–24.00s)
+16:00:09 | INFO     | app.renderer.html_renderer | Capturing scene 5/5: 180 frames @ 1080x1920 (24.00s–30.00s)
