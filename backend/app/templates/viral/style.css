@@ -411,3 +411,138 @@ html:not(.has-bg) #inner-glow {
   from { width: 0; }
   to   { width: 100%; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Phase 3B — AI Visual Direction Layer
+   All selectors driven by data attributes set by scene.js from visual_direction.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Flash overlay element ───────────────────────────────────────────────────── */
+
+#flash {
+  position: absolute;
+  inset: 0;
+  background: #FFFFFF;
+  opacity: 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+/* ── Layout modes ────────────────────────────────────────────────────────────── */
+
+/* lower_third: same as has-bg anchor (content to bottom) */
+[data-layout="lower_third"] #content {
+  justify-content: flex-end;
+}
+
+/* split: content anchored near 55% height line */
+[data-layout="split"] #content {
+  justify-content: flex-end;
+  padding-bottom: 18vh;
+}
+
+/* Horizontal accent rule at the split line */
+[data-layout="split"] #content::before {
+  content: '';
+  position: absolute;
+  left: var(--safe-x);
+  right: var(--safe-x);
+  top: 50%;
+  height: 0.18vw;
+  min-height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+}
+
+/* full_bleed: centred with generous internal padding, bigger headline */
+[data-layout="full_bleed"] #content {
+  justify-content: center;
+  padding: 8vh 4vw 16vh;
+}
+
+[data-layout="full_bleed"] #headline {
+  font-size: calc(var(--headline-size) * var(--energy-headline-boost, 1.15));
+}
+
+/* ── Transition styles ───────────────────────────────────────────────────────── */
+
+/* zoom: Ken Burns from scale(1.22) instead of default 1.08 */
+[data-transition="zoom"] #bg {
+  animation: bgRevealZoom var(--scene-duration) var(--ease-out) both;
+}
+
+/* flash: white overlay bursts in and fades out quickly */
+[data-transition="flash"] #flash {
+  animation: flashBurst 0.48s ease-out both;
+}
+
+/* glitch: content shakes laterally on entry */
+[data-transition="glitch"] #content {
+  animation: glitchEntry 0.30s ease both;
+}
+
+/* ── Background treatments ───────────────────────────────────────────────────── */
+
+/* dark_image: heavier blur + stronger dark overlay */
+.has-bg[data-bg-treatment="dark_image"] #bg {
+  filter: blur(5px) brightness(0.50) saturate(0.60);
+}
+
+.has-bg[data-bg-treatment="dark_image"] #bg::after {
+  background: linear-gradient(
+    180deg,
+    rgba(6, 6, 14, 0.30) 0%,
+    rgba(6, 6, 14, 0.68) 44%,
+    rgba(6, 6, 14, 0.96) 100%
+  );
+}
+
+/* abstract: multi-point accent radial on #inner-glow, no image needed */
+[data-bg-treatment="abstract"] #inner-glow {
+  background:
+    radial-gradient(ellipse 52% 26% at 28% 42%, var(--accent-glow) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 20% at 74% 62%, var(--accent-dim)  0%, transparent 60%),
+    radial-gradient(ellipse 60% 30% at 50% 80%, rgba(6,6,14,0.55)  0%, transparent 70%);
+  opacity: 0;
+  animation: layerFadeIn var(--dur-lg) 0.3s ease forwards,
+             abstractPulse 6s 1.8s ease-in-out infinite;
+}
+
+/* ── Subtitle emphasis ───────────────────────────────────────────────────────── */
+
+.subtitle-emphasis #subhead {
+  font-weight: 700;
+  font-size: clamp(13px, 3.8vw, 46px);
+  color: var(--text-hero);
+  letter-spacing: 0.02em;
+}
+
+/* ── Phase 3B Keyframes ──────────────────────────────────────────────────────── */
+
+/* Wider-zoom Ken Burns for transition_style=zoom */
+@keyframes bgRevealZoom {
+  0%   { opacity: 0; transform: scale(1.22); }
+  12%  { opacity: 1; transform: scale(1.18); }
+  100% { opacity: 1; transform: scale(1.00); }
+}
+
+/* Flash: full-white on frame 0, gone by 12% */
+@keyframes flashBurst {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Glitch: lateral shake — 4 rapid hops then settle */
+@keyframes glitchEntry {
+  0%   { transform: translateX(0);     }
+  18%  { transform: translateX(-3.2%); }
+  36%  { transform: translateX( 2.8%); }
+  54%  { transform: translateX(-1.6%); }
+  72%  { transform: translateX( 0.9%); }
+  100% { transform: translateX(0);     }
+}
+
+/* Abstract background pulse — slow morphing glow */
+@keyframes abstractPulse {
+  0%, 100% { opacity: 0.85; transform: scale(1.00); }
+  50%       { opacity: 1.00; transform: scale(1.10); }
+}

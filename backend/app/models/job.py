@@ -10,6 +10,17 @@ class Idea(BaseModel):
     estimated_views: str
 
 
+class VisualDirection(BaseModel):
+    energy_level: int = 3                          # 1–5
+    motion_intensity: Literal["calm", "medium", "high", "impact"] = "medium"
+    layout_mode: Literal["center", "lower_third", "split", "full_bleed"] = "center"
+    transition_style: Literal["cut", "zoom", "flash", "glitch"] = "cut"
+    emphasis_words: list[str] = Field(default_factory=list)
+    background_treatment: Literal["gradient", "blurred_image", "dark_image", "abstract"] = "gradient"
+    subtitle_emphasis: bool = False
+    pacing_note: str = ""
+
+
 class SceneProps(BaseModel):
     headline: str
     subhead: str = ""
@@ -17,6 +28,7 @@ class SceneProps(BaseModel):
     highlight_word_indices: list[int] = Field(default_factory=list)
     animation_seed: int = 0
     accent_color: str = "#7C5CFF"
+    visual_direction: Optional[VisualDirection] = None
 
 
 class Scene(BaseModel):

@@ -159,9 +159,19 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "hook": hook,
         })
 
+        vd_summary = [
+            {
+                "role": s.role,
+                "energy": s.props.visual_direction.energy_level if s.props.visual_direction else 3,
+                "motion": s.props.visual_direction.motion_intensity if s.props.visual_direction else "medium",
+                "layout": s.props.visual_direction.layout_mode if s.props.visual_direction else "center",
+            }
+            for s in timeline.scenes
+        ]
         await emit("scenes.generated", {
             "variant_id": variant_id,
             "scene_count": len(timeline.scenes),
+            "visual_direction": vd_summary,
         })
 
         # 6. Asset fetch — background images for each scene

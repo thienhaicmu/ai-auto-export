@@ -17,11 +17,11 @@ import logging
 import random
 from typing import Optional
 
-from pydantic import BaseModel, ValidationError, field_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from app.agents.story_planner import StoryPlan, plan_story
 from app.models.job import (
-    AudioConfig, Idea, Scene, SceneProps, SubtitleConfig, Timeline,
+    AudioConfig, Idea, Scene, SceneProps, SubtitleConfig, Timeline, VisualDirection,
 )
 from app.providers.llm.base import LLMAdapter
 
@@ -34,6 +34,68 @@ _QUALITY_PRESETS: dict[str, dict] = {
 
 # ── Pydantic schema for Gemini output ────────────────────────────────────────
 
+_MOTION_INTENSITIES = {"calm", "medium", "high", "impact"}
+_LAYOUT_MODES       = {"center", "lower_third", "split", "full_bleed"}
+_TRANSITION_STYLES  = {"cut", "zoom", "flash", "glitch"}
+_BG_TREATMENTS      = {"gradient", "blurred_image", "dark_image", "abstract"}
+
+_ROLE_VD_DEFAULTS: dict[str, dict] = {
+    "hook":        {"energy_level": 5, "motion_intensity": "impact",  "layout_mode": "center",      "transition_style": "flash",  "background_treatment": "dark_image",    "subtitle_emphasis": True},
+    "context":     {"energy_level": 2, "motion_intensity": "calm",    "layout_mode": "lower_third", "transition_style": "cut",    "background_treatment": "blurred_image", "subtitle_emphasis": False},
+    "escalation":  {"energy_level": 4, "motion_intensity": "high",    "layout_mode": "split",       "transition_style": "zoom",   "background_treatment": "dark_image",    "subtitle_emphasis": True},
+    "twist":       {"energy_level": 4, "motion_intensity": "high",    "layout_mode": "full_bleed",  "transition_style": "glitch", "background_treatment": "abstract",      "subtitle_emphasis": True},
+    "payoff":      {"energy_level": 3, "motion_intensity": "medium",  "layout_mode": "center",      "transition_style": "zoom",   "background_treatment": "gradient",      "subtitle_emphasis": False},
+}
+
+
+class _GeminiVisualDirection(BaseModel):
+    energy_level: int = 3
+    motion_intensity: str = "medium"
+    layout_mode: str = "center"
+    transition_style: str = "cut"
+    emphasis_words: list[str] = Field(default_factory=list)
+    background_treatment: str = "gradient"
+    subtitle_emphasis: bool = False
+    pacing_note: str = ""
+
+    @field_validator("energy_level", mode="before")
+    @classmethod
+    def _clamp_energy(cls, v) -> int:
+        return max(1, min(5, int(v)))
+
+    @field_validator("motion_intensity", mode="before")
+    @classmethod
+    def _valid_motion(cls, v: str) -> str:
+        return v if v in _MOTION_INTENSITIES else "medium"
+
+    @field_validator("layout_mode", mode="before")
+    @classmethod
+    def _valid_layout(cls, v: str) -> str:
+        return v if v in _LAYOUT_MODES else "center"
+
+    @field_validator("transition_style", mode="before")
+    @classmethod
+    def _valid_transition(cls, v: str) -> str:
+        return v if v in _TRANSITION_STYLES else "cut"
+
+    @field_validator("background_treatment", mode="before")
+    @classmethod
+    def _valid_bg(cls, v: str) -> str:
+        return v if v in _BG_TREATMENTS else "gradient"
+
+    @field_validator("emphasis_words", mode="before")
+    @classmethod
+    def _clean_ew(cls, v) -> list[str]:
+        if not isinstance(v, list):
+            return []
+        return [str(w).strip() for w in v if str(w).strip()][:6]
+
+    @field_validator("pacing_note", mode="before")
+    @classmethod
+    def _trim_note(cls, v: str) -> str:
+        return str(v).strip()[:80]
+
+
 class _GeminiScene(BaseModel):
     index: int
     role: str                            # hook|context|escalation|twist|payoff
@@ -44,6 +106,7 @@ class _GeminiScene(BaseModel):
     animation_seed: int = 0
     visual_keywords: list[str] = []     # 2-4 keywords for background image search
     emotional_tone: str = "energetic"
+    visual_direction: _GeminiVisualDirection = Field(default_factory=_GeminiVisualDirection)
 
     @field_validator("headline", mode="before")
     @classmethod
@@ -101,6 +164,8 @@ def _build_prompt(
     def _example_scene(sp) -> str:
         seed = random.randint(1000, 9999)
         vk_example = json.dumps(sp.visual_keywords[:3])
+        vd = _ROLE_VD_DEFAULTS.get(sp.role, {})
+        hl_example = json.dumps([sp.visual_keywords[0]] if sp.visual_keywords else [])
         return (
             f"    {{\n"
             f'      "index": {sp.index},\n'
@@ -111,7 +176,17 @@ def _build_prompt(
             f'      "highlight_word_indices": [{",".join(str(i) for i in ([0] if sp.index == 0 else []))}],\n'
             f'      "animation_seed": {seed},\n'
             f'      "visual_keywords": {vk_example},\n'
-            f'      "emotional_tone": "{sp.emotional_tone}"\n'
+            f'      "emotional_tone": "{sp.emotional_tone}",\n'
+            f'      "visual_direction": {{\n'
+            f'        "energy_level": {vd.get("energy_level", 3)},\n'
+            f'        "motion_intensity": "{vd.get("motion_intensity", "medium")}",\n'
+            f'        "layout_mode": "{vd.get("layout_mode", "center")}",\n'
+            f'        "transition_style": "{vd.get("transition_style", "cut")}",\n'
+            f'        "emphasis_words": {hl_example},\n'
+            f'        "background_treatment": "{vd.get("background_treatment", "gradient")}",\n'
+            f'        "subtitle_emphasis": {"true" if vd.get("subtitle_emphasis") else "false"},\n'
+            f'        "pacing_note": "<short director note, max 80 chars>"\n'
+            f'      }}\n'
             f"    }}"
         )
 
@@ -133,6 +208,14 @@ CRITICAL RULES:
 - visual_keywords: 2-4 English words for background image search regardless of video language
 - animation_seed: unique random integer, keep the example values as-is
 - No copyrighted long quotes. No dangerous claims.
+- visual_direction.energy_level: integer 1-5 matching the scene's emotional intensity
+- visual_direction.motion_intensity: one of calm|medium|high|impact
+- visual_direction.layout_mode: one of center|lower_third|split|full_bleed
+- visual_direction.transition_style: one of cut|zoom|flash|glitch
+- visual_direction.emphasis_words: 0-3 English words to highlight in the headline
+- visual_direction.background_treatment: one of gradient|blurred_image|dark_image|abstract
+- visual_direction.subtitle_emphasis: true for scenes that need the subhead to stand out
+- visual_direction.pacing_note: one short English sentence describing the director's intent
 
 Return this JSON structure exactly (replace angle-bracket placeholders with real content):
 {{
@@ -244,11 +327,23 @@ def _map_to_timeline(
         end = t + dur
         # visual_keywords are stored as a custom attribute (not in SceneProps Pydantic model)
         # so we propagate them through props using a workaround via __dict__
+        vd_src = gs.visual_direction
+        visual_direction = VisualDirection(
+            energy_level=vd_src.energy_level,
+            motion_intensity=vd_src.motion_intensity,
+            layout_mode=vd_src.layout_mode,
+            transition_style=vd_src.transition_style,
+            emphasis_words=vd_src.emphasis_words,
+            background_treatment=vd_src.background_treatment,
+            subtitle_emphasis=vd_src.subtitle_emphasis,
+            pacing_note=vd_src.pacing_note,
+        )
         props = SceneProps(
             headline=gs.headline[:30].upper(),
             subhead=gs.subhead[:60],
             highlight_word_indices=gs.highlight_word_indices,
             animation_seed=gs.animation_seed or (1000 + i * 37),
+            visual_direction=visual_direction,
         )
         # Attach visual_keywords as an extra attr so asset_agent can read it
         # (Pydantic v2 model_config extra="allow" would be needed; instead we

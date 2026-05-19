@@ -68,6 +68,16 @@ class MockLLMAdapter:
             ],
         })
 
+    @staticmethod
+    def _vd(role: str) -> dict:
+        return {
+            "hook":       {"energy_level": 5, "motion_intensity": "impact",  "layout_mode": "center",      "transition_style": "flash",  "emphasis_words": [],    "background_treatment": "dark_image",    "subtitle_emphasis": True,  "pacing_note": "Slam cut with white flash — stop the scroll."},
+            "context":    {"energy_level": 2, "motion_intensity": "calm",    "layout_mode": "lower_third", "transition_style": "cut",    "emphasis_words": [],    "background_treatment": "blurred_image", "subtitle_emphasis": False, "pacing_note": "Slow reveal, let viewer absorb the context."},
+            "escalation": {"energy_level": 4, "motion_intensity": "high",    "layout_mode": "split",       "transition_style": "zoom",   "emphasis_words": [],    "background_treatment": "dark_image",    "subtitle_emphasis": True,  "pacing_note": "Push zoom tightens tension to a breaking point."},
+            "twist":      {"energy_level": 4, "motion_intensity": "high",    "layout_mode": "full_bleed",  "transition_style": "glitch", "emphasis_words": [],    "background_treatment": "abstract",      "subtitle_emphasis": True,  "pacing_note": "Glitch entry mirrors the mind-bending revelation."},
+            "payoff":     {"energy_level": 3, "motion_intensity": "medium",  "layout_mode": "center",      "transition_style": "zoom",   "emphasis_words": [],    "background_treatment": "gradient",      "subtitle_emphasis": False, "pacing_note": "Confident close — drive the CTA home."},
+        }.get(role, {"energy_level": 3, "motion_intensity": "medium", "layout_mode": "center", "transition_style": "cut", "emphasis_words": [], "background_treatment": "gradient", "subtitle_emphasis": False, "pacing_note": ""})
+
     def _scenes(self, prompt: str) -> str:
         kw = _extract_keyword(prompt)
         kw_up = kw.upper()[:20]
@@ -91,6 +101,7 @@ class MockLLMAdapter:
                     "animation_seed": 1000,
                     "visual_keywords": kw_words + ["shocking", "breaking"],
                     "emotional_tone": "shocking",
+                    "visual_direction": self._vd("hook"),
                 },
                 {
                     "index": 1,
@@ -102,6 +113,7 @@ class MockLLMAdapter:
                     "animation_seed": 1037,
                     "visual_keywords": kw_words + ["background", "history"],
                     "emotional_tone": "curious",
+                    "visual_direction": self._vd("context"),
                 },
                 {
                     "index": 2,
@@ -113,6 +125,7 @@ class MockLLMAdapter:
                     "animation_seed": 1074,
                     "visual_keywords": kw_words + ["tension", "conflict"],
                     "emotional_tone": "tense",
+                    "visual_direction": self._vd("escalation"),
                 },
                 {
                     "index": 3,
@@ -124,6 +137,7 @@ class MockLLMAdapter:
                     "animation_seed": 1111,
                     "visual_keywords": kw_words + ["reveal", "surprise"],
                     "emotional_tone": "revelatory",
+                    "visual_direction": self._vd("twist"),
                 },
                 {
                     "index": 4,
@@ -135,6 +149,7 @@ class MockLLMAdapter:
                     "animation_seed": 1148,
                     "visual_keywords": kw_words + ["success", "victory"],
                     "emotional_tone": "triumphant",
+                    "visual_direction": self._vd("payoff"),
                 },
             ],
         })
