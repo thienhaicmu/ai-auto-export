@@ -45,6 +45,7 @@ class Timeline(BaseModel):
     language: str = "en"
     style: str = "viral"
     format: str = "9:16"
+    quality_mode: Literal["preview", "final"] = "final"
     resolution: tuple[int, int] = (1080, 1920)
     fps: int = 30
     duration_seconds: int

@@ -47,6 +47,7 @@ class RenderRequest(BaseModel):
     styles: list[str] = ["viral"]
     output_folder: str = ""
     chosen_idea_id: str | None = None
+    quality_mode: Literal["preview", "final"] = "final"
 
 
 class RenderResponse(BaseModel):
@@ -95,7 +96,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "ts": int(time.time()),
             "data": data,
         }
-        log.debug("emit %s → %s  data=%s", job_id, event_type, data)
+        log.debug("emit %s -> %s  data=%s", job_id, event_type, data)
         await event_bus.publish(job_id, event)
 
     try:
@@ -104,6 +105,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "output_count": req.output_count,
             "styles": req.styles,
             "language": "en",
+            "quality_mode": req.quality_mode,
         })
 
         # 2. Language detection (heuristic — real LLM in Phase 2)
@@ -140,6 +142,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             keyword=req.keyword,
             output_path=str(final_output_path),
             duration_seconds=req.duration_seconds,
+            quality_mode=req.quality_mode,
         )
         await emit("scenes.generated", {
             "variant_id": variant_id,
@@ -170,7 +173,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
         )
 
         # 9. FFmpeg encode (emits render.progress)
-        log.info("Starting FFmpeg encode for job %s → %s", job_id, final_output_path)
+        log.info("Starting FFmpeg encode for job %s -> %s", job_id, final_output_path)
         output_path = await encode(
             timeline=timeline,
             frame_dirs=frame_dirs,
@@ -186,7 +189,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
 
         # 11. job.completed
         await emit("job.completed", {"outputs": [str(output_path)]})
-        log.info("Job %s complete -> %s", job_id, output_path)
+        log.info("Job %s complete [%s] -> %s", job_id, req.quality_mode, output_path)
 
     except Exception as exc:
         log.exception("Pipeline error for job %s", job_id)

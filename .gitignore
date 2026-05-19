@@ -37,3 +37,4 @@ assets/fonts/*.otf
 assets/music/*.mp3
 backend/temp/*/*/*.png
 backend/temp/*/*/*.wav
+*.mp4

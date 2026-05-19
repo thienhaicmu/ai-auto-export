@@ -7,13 +7,24 @@ from app.models.job import Timeline, Scene, SceneProps, AudioConfig, SubtitleCon
 __all__ = ["Timeline", "Scene", "SceneProps", "AudioConfig", "SubtitleConfig"]
 
 
+_QUALITY_PRESETS: dict[str, dict] = {
+    "preview": {"resolution": (480, 854),  "fps": 24},
+    "final":   {"resolution": (1080, 1920), "fps": 30},
+}
+
+
 def fixture_timeline(
     job_id: str,
     keyword: str,
     output_path: str,
     duration_seconds: int = 30,
+    quality_mode: str = "final",
 ) -> Timeline:
     """Phase 1: returns a hardcoded 5-scene viral timeline for smoke-testing."""
+    preset = _QUALITY_PRESETS.get(quality_mode, _QUALITY_PRESETS["final"])
+    resolution = preset["resolution"]
+    fps = preset["fps"]
+
     headlines = [
         keyword.upper(),
         "WHAT THEY",
@@ -52,8 +63,9 @@ def fixture_timeline(
         language="en",
         style="viral",
         format="9:16",
-        resolution=(1080, 1920),
-        fps=30,
+        quality_mode=quality_mode,
+        resolution=resolution,
+        fps=fps,
         duration_seconds=duration_seconds,
         audio=AudioConfig(
             music_bed=None,

@@ -6,3 +6,24 @@
 15:20:41 | INFO     | app.api.render | Starting mock render job job_f8440a3b for keyword 'karen'
 15:20:41 | INFO     | app.api.ws | WS client connected for job job_f8440a3b
 15:21:15 | INFO     | app.api.ws | WS client disconnected for job job_f8440a3b
+15:51:14 | INFO     | app.api.render | Render job job_c4cc2c81: keyword='karen' dur=30s
+15:51:15 | INFO     | app.api.render | Starting HTML frame capture for job job_c4cc2c81
+15:51:18 | INFO     | app.renderer.html_renderer | Capturing scene 1/5: 180 frames @ 1080x1920 (0.00s–6.00s)
+15:53:30 | INFO     | app.renderer.html_renderer | Scene 0: 180 frames captured → D:\ai-auto-export\backend\temp\job_c4cc2c81\scene_00\frames
+15:53:31 | INFO     | app.renderer.html_renderer | Capturing scene 2/5: 180 frames @ 1080x1920 (6.00s–12.00s)
+15:55:41 | INFO     | app.renderer.html_renderer | Scene 1: 180 frames captured → D:\ai-auto-export\backend\temp\job_c4cc2c81\scene_01\frames
+15:55:41 | INFO     | app.renderer.html_renderer | Capturing scene 3/5: 180 frames @ 1080x1920 (12.00s–18.00s)
+15:57:53 | INFO     | app.renderer.html_renderer | Scene 2: 180 frames captured → D:\ai-auto-export\backend\temp\job_c4cc2c81\scene_02\frames
+15:57:53 | INFO     | app.renderer.html_renderer | Capturing scene 4/5: 180 frames @ 1080x1920 (18.00s–24.00s)
+16:00:09 | INFO     | app.renderer.html_renderer | Scene 3: 180 frames captured → D:\ai-auto-export\backend\temp\job_c4cc2c81\scene_03\frames
+16:00:09 | INFO     | app.renderer.html_renderer | Capturing scene 5/5: 180 frames @ 1080x1920 (24.00s–30.00s)
+16:02:26 | INFO     | app.renderer.html_renderer | Scene 4: 180 frames captured → D:\ai-auto-export\backend\temp\job_c4cc2c81\scene_04\frames
+16:02:27 | INFO     | app.api.render | Starting FFmpeg encode for job job_c4cc2c81 → d:\ai-auto-export\backend\output\karen_viral_01.mp4
+16:02:27 | INFO     | app.renderer.ffmpeg_encoder | Encoding scene 0 → scene_00.mp4
+16:02:31 | INFO     | app.renderer.ffmpeg_encoder | Encoding scene 1 → scene_01.mp4
+16:02:35 | INFO     | app.renderer.ffmpeg_encoder | Encoding scene 2 → scene_02.mp4
+16:02:38 | INFO     | app.renderer.ffmpeg_encoder | Encoding scene 3 → scene_03.mp4
+16:02:41 | INFO     | app.renderer.ffmpeg_encoder | Encoding scene 4 → scene_04.mp4
+16:02:44 | INFO     | app.renderer.ffmpeg_encoder | Concatenating 5 clips → combined.mp4
+16:02:46 | INFO     | app.renderer.ffmpeg_encoder | Final encode → d:\ai-auto-export\backend\output\karen_viral_01.mp4
+16:02:50 | INFO     | app.api.render | Job job_c4cc2c81 complete → d:\ai-auto-export\backend\output\karen_viral_01.mp4

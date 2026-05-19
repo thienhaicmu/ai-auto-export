@@ -1,6 +1,7 @@
-/* Viral template — kinetic typography on dark background.
+/* Viral template — cinematic dark kinetic typography.
    RULES: CSS @keyframes only. No setTimeout/setInterval.
-   Fonts loaded via @font-face. window.__SCENE__ props injected by Playwright. */
+   All dimensions in vw/vh so layout scales correctly at any viewport size
+   (preview 480x854, final 1080x1920). */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -10,17 +11,16 @@
 
 :root {
   --accent: #7C5CFF;
-  --accent-glow: rgba(124, 92, 255, 0.5);
+  --accent-glow: rgba(124, 92, 255, 0.45);
+  --accent-dim: rgba(124, 92, 255, 0.18);
   --highlight: #F5F5F7;
-  --subtext: rgba(245, 245, 247, 0.65);
-  --bg: #08080A;
-  --w: 1080px;
-  --h: 1920px;
+  --subtext: rgba(245, 245, 247, 0.72);
+  --bg: #08080E;
 }
 
 html, body {
-  width: var(--w);
-  height: var(--h);
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   background: var(--bg);
   font-family: 'NotoSans', 'NotoSansCJK', sans-serif;
@@ -28,48 +28,67 @@ html, body {
   user-select: none;
 }
 
-/* ── Background ──────────────────────────────────────────────────────────── */
+/* ── Background image ────────────────────────────────────────────────────── */
 
 #bg {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
-  animation: bgReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: bgReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Dark gradient over the background image */
 #bg::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(8, 8, 10, 0.3) 0%,
-    rgba(8, 8, 10, 0.6) 50%,
-    rgba(8, 8, 10, 0.9) 100%
+    rgba(8, 8, 14, 0.25) 0%,
+    rgba(8, 8, 14, 0.55) 45%,
+    rgba(8, 8, 14, 0.88) 100%
   );
 }
 
-/* ── Noise texture overlay ──────────────────────────────────────────────── */
-#noise {
+/* ── Gradient halo — cinematic top-center glow ──────────────────────────── */
+
+#gradient-halo {
   position: absolute;
   inset: 0;
-  opacity: 0.04;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-size: 256px;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 5%, rgba(124, 92, 255, 0.20) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(8, 8, 14, 0.8) 0%, transparent 70%);
+  pointer-events: none;
+  animation: haloFadeIn 1.2s ease both;
+}
+
+/* ── Vignette — darkens edges ────────────────────────────────────────────── */
+
+#vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 85% 85% at 50% 50%,
+    transparent 55%,
+    rgba(4, 4, 8, 0.75) 100%
+  );
   pointer-events: none;
 }
 
-/* ── Particles ──────────────────────────────────────────────────────────── */
-.particle {
+/* ── Film grain noise ────────────────────────────────────────────────────── */
+
+#noise {
   position: absolute;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: floatParticle var(--dur, 4s) ease-in-out infinite alternate;
-  opacity: 0.6;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px;
+  pointer-events: none;
 }
 
-/* ── Content area ──────────────────────────────────────────────────────── */
+/* ── Content area ────────────────────────────────────────────────────────── */
+
 #content {
   position: absolute;
   inset: 0;
@@ -77,40 +96,54 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 60px;
+  padding: 8vh 6vw;
   gap: 0;
 }
 
-/* ── Top label ────────────────────────────────────────────────────────── */
+/* ── Top label ───────────────────────────────────────────────────────────── */
+
 #label {
-  font-size: 28px;
+  font-size: 2.4vw;
   font-weight: 700;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.35em;
   text-transform: uppercase;
   color: var(--accent);
   opacity: 0;
-  animation: fadeSlideUp 0.5s 0.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  margin-bottom: 32px;
+  animation: fadeSlideUp 0.45s 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  margin-bottom: 3.5vw;
 }
 
-/* ── Headline ─────────────────────────────────────────────────────────── */
+/* ── Headline wrapper (overflow:hidden enables the reveal clip) ──────────── */
+
+#headline-wrap {
+  overflow: hidden;
+  /* Extra vertical padding so descenders aren't clipped at bottom */
+  padding-bottom: 0.5vw;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Headline ────────────────────────────────────────────────────────────── */
+
 #headline {
-  font-size: 128px;
+  font-size: 12vw;
   font-weight: 900;
   line-height: 1.0;
   text-align: center;
   color: var(--highlight);
   text-transform: uppercase;
   letter-spacing: -0.02em;
-  opacity: 0;
-  animation: headlineReveal 0.7s 0.1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform: translateY(110%);
+  animation: headlineReveal 0.65s 0.05s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   text-shadow:
-    0 0 80px var(--accent-glow),
-    0 4px 24px rgba(0, 0, 0, 0.8);
+    0 0 6vw var(--accent-glow),
+    0 0.4vw 2vw rgba(0, 0, 0, 0.9);
   word-break: break-word;
 }
 
-/* ── Highlight words ─────────────────────────────────────────────────── */
+/* ── Highlighted words ───────────────────────────────────────────────────── */
+
 #headline .hl {
   color: var(--accent);
   position: relative;
@@ -119,103 +152,105 @@ html, body {
 #headline .hl::after {
   content: '';
   position: absolute;
-  inset: -4px -8px;
-  background: var(--accent-glow);
-  border-radius: 4px;
+  inset: -0.3vw -0.6vw;
+  background: var(--accent-dim);
+  border-radius: 0.4vw;
   z-index: -1;
-  animation: glowPulse 2s ease-in-out infinite;
+  animation: glowPulse 2.4s ease-in-out infinite;
 }
 
-/* ── Divider ─────────────────────────────────────────────────────────── */
+/* ── Divider ─────────────────────────────────────────────────────────────── */
+
 #divider {
   width: 0;
-  height: 3px;
+  height: 0.15vw;
+  min-height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  margin: 40px 0;
-  animation: expandLine 0.6s 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  margin: 4vw 0 3.5vw;
+  animation: expandLine 0.55s 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-/* ── Subhead ──────────────────────────────────────────────────────────── */
+/* ── Subhead ─────────────────────────────────────────────────────────────── */
+
 #subhead {
-  font-size: 42px;
-  font-weight: 500;
+  font-size: 3.6vw;
+  font-weight: 400;
   text-align: center;
   color: var(--subtext);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   opacity: 0;
-  animation: fadeSlideUp 0.5s 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  line-height: 1.4;
+  animation: fadeSlideUp 0.5s 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  line-height: 1.5;
+  max-width: 80%;
 }
 
-/* ── Progress bar ─────────────────────────────────────────────────────── */
+/* ── Progress bar ────────────────────────────────────────────────────────── */
+
 #progress-bar {
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 6px;
-  background: linear-gradient(90deg, var(--accent), #A78BFF);
+  height: 0.25vw;
+  min-height: 3px;
+  background: linear-gradient(90deg, var(--accent), #C4ADFF);
   animation: progressGrow var(--scene-duration, 6s) linear forwards;
   transform-origin: left;
 }
 
-/* ── Scene index badge ───────────────────────────────────────────────── */
+/* ── Scene index badge ───────────────────────────────────────────────────── */
+
 #badge {
   position: absolute;
-  top: 60px;
-  right: 60px;
-  width: 64px;
-  height: 64px;
+  top: 4vw;
+  right: 4vw;
+  width: 6vw;
+  height: 6vw;
+  min-width: 36px;
+  min-height: 36px;
   border-radius: 50%;
-  background: rgba(124, 92, 255, 0.15);
-  border: 2px solid rgba(124, 92, 255, 0.4);
+  background: transparent;
+  border: 0.2vw solid rgba(124, 92, 255, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 1.9vw;
   font-weight: 700;
-  color: var(--accent);
+  color: rgba(124, 92, 255, 0.85);
   opacity: 0;
-  animation: fadeIn 0.4s 1s ease forwards;
+  animation: fadeIn 0.4s 0.9s ease forwards;
 }
 
-/* ── Keyframes ──────────────────────────────────────────────────────────── */
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
 
 @keyframes bgReveal {
-  from { opacity: 0; transform: scale(1.05); }
+  from { opacity: 0; transform: scale(1.06); }
   to   { opacity: 1; transform: scale(1); }
 }
 
+@keyframes haloFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Slide-up reveal: text starts below clip boundary, moves to natural position */
 @keyframes headlineReveal {
-  from {
-    opacity: 0;
-    transform: translateY(60px) scale(0.94);
-    filter: blur(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
+  from { transform: translateY(110%); }
+  to   { transform: translateY(0); }
 }
 
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(30px); }
+  from { opacity: 0; transform: translateY(1.5vw); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes expandLine {
   from { width: 0; }
-  to   { width: 300px; }
+  to   { width: 26vw; }
 }
 
 @keyframes glowPulse {
-  0%, 100% { opacity: 0.4; }
-  50%       { opacity: 0.9; }
-}
-
-@keyframes floatParticle {
-  from { transform: translateY(0) scale(1); opacity: 0.4; }
-  to   { transform: translateY(-80px) scale(1.3); opacity: 0.8; }
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 0.8; }
 }
 
 @keyframes fadeIn {

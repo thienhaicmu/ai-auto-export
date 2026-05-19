@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <!--
-  Viral scene template — kinetic typography on dark background.
-  1080×1920 (9:16). Rendered by Playwright headless Chromium.
+  Viral scene template — cinematic kinetic typography on dark background.
+  Fully responsive: all dimensions in vw/vh so it works at any viewport size
+  (preview: 480x854, final: 1080x1920).
 
   Props injected by html_renderer.py:
     window.__SCENE__ = { index, start, end, template, props: { headline, subhead, ... } }
 
   Signals ready via:
-    window.__SCENE_READY__ = true   (set by scene.js after fonts + bg loaded)
+    window.__SCENE_READY__ = true   (set by scene.js after fonts loaded)
 
   Animation contract:
     - CSS @keyframes ONLY. No setTimeout / setInterval.
@@ -16,13 +17,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1080">
+  <meta name="viewport" content="width=device-width">
   <title>Scene</title>
 
-  <!--
-    Fonts shipped with app. Playwright serves from local file server,
-    so relative paths resolve correctly. Never system fonts.
-  -->
   <style>
     @font-face {
       font-family: 'NotoSans';
@@ -52,16 +49,27 @@
   <!-- Background image layer -->
   <div id="bg"></div>
 
+  <!-- Radial gradient halo — cinematic top glow -->
+  <div id="gradient-halo"></div>
+
+  <!-- Vignette — darkens edges for cinematic depth -->
+  <div id="vignette"></div>
+
   <!-- Film grain noise -->
   <div id="noise"></div>
-
-  <!-- Floating particles (populated by scene.js) -->
-  <div id="particles"></div>
 
   <!-- Main content -->
   <div id="content">
     <div id="label">Breaking</div>
-    <div id="headline">LOADING</div>
+
+    <!--
+      Headline wrapper has overflow:hidden so the slide-up reveal
+      is clipped at the container boundary (no text visible below).
+    -->
+    <div id="headline-wrap">
+      <div id="headline">LOADING</div>
+    </div>
+
     <div id="divider"></div>
     <div id="subhead"></div>
   </div>
