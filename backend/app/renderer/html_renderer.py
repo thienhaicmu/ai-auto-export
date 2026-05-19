@@ -143,6 +143,27 @@ async def render_html_scenes(
                 await page.route(f"{_BASE_URL}/**", _route_handler)
 
                 # Inject scene data BEFORE the page loads (add_init_script runs first)
+                direction = timeline.audio.direction
+                audio_data: dict = {}
+                if direction:
+                    # Find the transition hit for this scene (start time, if not scene 0)
+                    transition_hit: float | None = None
+                    if scene.index > 0 and scene.index - 1 < len(direction.transition_hits):
+                        transition_hit = direction.transition_hits[scene.index - 1]
+                    energy = (
+                        direction.scene_energy[scene.index]
+                        if scene.index < len(direction.scene_energy)
+                        else 3
+                    )
+                    audio_data = {
+                        "bpm": direction.bpm,
+                        "beat_markers": direction.beat_markers,
+                        "energy": energy,
+                        "transition_hit": transition_hit,
+                        "intro_hit": direction.intro_hit,
+                        "outro_hit": direction.outro_hit,
+                    }
+
                 scene_payload = {
                     "index": scene.index,
                     "start": scene.start,
@@ -150,6 +171,7 @@ async def render_html_scenes(
                     "template": scene.template,
                     "role": scene.role,
                     "props": scene.props.model_dump(),
+                    "audio": audio_data,
                 }
                 await page.add_init_script(
                     f"window.__SCENE__ = {json.dumps(scene_payload, ensure_ascii=False)};"

@@ -39,6 +39,8 @@ from app.renderer.subtitle import generate_ass_subtitles
 from app.renderer.html_renderer import render_html_scenes
 from app.renderer.ffmpeg_encoder import encode
 from app.renderer.output_validator import validate_output
+from app.renderer.beat_sync import apply_beat_sync
+from app.renderer.music_selector import select_music
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -245,7 +247,26 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "total_scenes": len(timeline.scenes),
         })
 
-        # 7. Voice placeholder
+        # 7. Beat sync — snap scene boundaries + populate audio.direction
+        try:
+            timeline = apply_beat_sync(timeline)
+        except Exception as exc:
+            log.warning("Beat sync failed for job %s (%s) — continuing without beat alignment", job_id, exc)
+
+        direction = timeline.audio.direction
+        await emit("audio.timeline.generated", {
+            "variant_id": variant_id,
+            "bpm": direction.bpm if direction else 128,
+            "beat_count": len(direction.beat_markers) if direction else 0,
+            "transition_hits": direction.transition_hits if direction else [],
+        })
+
+        # 8. Music selection
+        music_path = select_music(req.styles[0] if req.styles else "viral")
+        if music_path:
+            timeline.audio.music_bed = str(music_path)
+
+        # 9. Voice placeholder
         try:
             voice_path = job_temp / "voice.wav"
             _generate_silent_wav(voice_path, req.duration_seconds)
@@ -258,7 +279,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "duration_seconds": req.duration_seconds,
         })
 
-        # 8. Subtitles
+        # 10. Subtitles
         try:
             sub_path = job_temp / "subs.ass"
             generate_ass_subtitles(timeline, sub_path)
@@ -267,7 +288,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             log.warning("Subtitle generation failed for job %s (%s) — continuing without subs", job_id, exc)
             timeline.subtitles.path = None
 
-        # 9. Playwright frame capture
+        # 11. Playwright frame capture
         try:
             log.info("Starting HTML frame capture for job %s", job_id)
             frame_dirs = await render_html_scenes(
@@ -280,7 +301,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             await fail("html_capture", exc)
             return
 
-        # 10. FFmpeg encode
+        # 12. FFmpeg encode
         try:
             log.info("Starting FFmpeg encode for job %s -> %s", job_id, final_output_path)
             output_path = await encode(
@@ -292,6 +313,14 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
         except Exception as exc:
             await fail("ffmpeg_encode", exc)
             return
+
+        await emit("audio.mixed", {
+            "variant_id": variant_id,
+            "has_music": bool(timeline.audio.music_bed),
+            "has_voice": bool(timeline.audio.voice_track),
+            "duck_voice": (timeline.audio.direction.duck_voice
+                           if timeline.audio.direction else False),
+        })
 
         # 11. Output QA validation — gate on passing before declaring success
         qa_result = await validate_output(output_path, timeline)

@@ -1,7 +1,7 @@
 /**
- * Viral template runtime — Phase 3B: AI Visual Direction Layer
+ * Viral template runtime — Phase 4A: Cinematic Audio + Beat Sync
  *
- * Reads window.__SCENE__ props, maps role → design tokens,
+ * Reads window.__SCENE__ props + audio direction, maps role → design tokens,
  * applies visual_direction attributes and CSS vars, populates DOM,
  * then signals window.__SCENE_READY__ = true.
  *
@@ -10,6 +10,7 @@
  *   - window.__SCENE_READY__ = true set after fonts (+ bg image) loaded
  *   - window.__SCENE__ injected by html_renderer.py via addInitScript
  *   - Missing visual_direction must not crash (all reads gated with || {})
+ *   - Missing audio must not crash (gated with || {})
  */
 
 (function () {
@@ -17,6 +18,20 @@
 
   var scene  = window.__SCENE__ || {};
   var props  = scene.props     || {};
+
+  // ── Audio Direction (Phase 4A) ─────────────────────────────────────────────
+  //   Exposed on window.__SCENE__.audio for future template use.
+  //   beat_markers are seconds from video start (absolute, not scene-relative).
+
+  var AUDIO = scene.audio || {};
+  window.__SCENE_AUDIO__ = {
+    bpm:             AUDIO.bpm            || 128,
+    beat_markers:    AUDIO.beat_markers   || [],
+    energy:          AUDIO.energy         || 3,
+    transition_hit:  AUDIO.transition_hit || null,
+    intro_hit:       AUDIO.intro_hit      || null,
+    outro_hit:       AUDIO.outro_hit      || null,
+  };
 
   // ── Extract props ──────────────────────────────────────────────────────────
 

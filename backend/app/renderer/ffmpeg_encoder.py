@@ -242,12 +242,57 @@ async def encode(
             inputs += ["-i", str(music_bed)]
             mi = next_idx
             next_idx += 1
-            music_vol = 10 ** (timeline.audio.music_gain_db / 20.0)
-            filter_parts += [
-                f"[{vi}:a]volume=1.0[v_a]",
-                f"[{mi}:a]volume={music_vol:.6f}[m_a]",
-                "[v_a][m_a]amix=inputs=2:normalize=0[audio_out]",
-            ]
+
+            direction = timeline.audio.direction
+            music_gain_db = timeline.audio.music_gain_db
+            music_vol = 10 ** (music_gain_db / 20.0)
+
+            if direction and direction.duck_voice:
+                # Trim music to video duration, apply fade in/out, then sidechain-duck
+                fade_in  = direction.fade_in_ms  / 1000.0
+                fade_out = direction.fade_out_ms / 1000.0
+                total    = float(timeline.duration_seconds)
+                fade_out_start = max(0.0, total - fade_out)
+
+                filter_parts += [
+                    f"[{vi}:a]volume=1.0[v_a]",
+                    # Trim music to video length, loop if too short, then fade
+                    f"[{mi}:a]"
+                    f"atrim=0:{total:.4f},"
+                    f"aloop=loop=-1:size=2e+09,"
+                    f"atrim=0:{total:.4f},"
+                    f"afade=t=in:st=0:d={fade_in:.4f},"
+                    f"afade=t=out:st={fade_out_start:.4f}:d={fade_out:.4f},"
+                    f"volume={music_vol:.6f}"
+                    f"[m_faded]",
+                    # Sidechain-compress music under voice
+                    "[v_a][m_faded]sidechaincompress="
+                    "threshold=0.02:ratio=4:attack=5:release=200:level_sc=1"
+                    "[m_ducked]",
+                    # Mix and apply brick-wall limiter
+                    "[v_a][m_ducked]amix=inputs=2:normalize=0[mixed]",
+                    "[mixed]alimiter=level_in=1:level_out=1:limit=0.95:attack=5:release=50[audio_out]",
+                ]
+            else:
+                # Simple mix: trim, fade, volume, no ducking
+                fade_in  = (direction.fade_in_ms  / 1000.0) if direction else 0.5
+                fade_out = (direction.fade_out_ms / 1000.0) if direction else 1.0
+                total    = float(timeline.duration_seconds)
+                fade_out_start = max(0.0, total - fade_out)
+
+                filter_parts += [
+                    f"[{vi}:a]volume=1.0[v_a]",
+                    f"[{mi}:a]"
+                    f"atrim=0:{total:.4f},"
+                    f"aloop=loop=-1:size=2e+09,"
+                    f"atrim=0:{total:.4f},"
+                    f"afade=t=in:st=0:d={fade_in:.4f},"
+                    f"afade=t=out:st={fade_out_start:.4f}:d={fade_out:.4f},"
+                    f"volume={music_vol:.6f}"
+                    f"[m_faded]",
+                    "[v_a][m_faded]amix=inputs=2:normalize=0[mixed]",
+                    "[mixed]alimiter=level_in=1:level_out=1:limit=0.95:attack=5:release=50[audio_out]",
+                ]
             audio_out = "[audio_out]"
         else:
             filter_parts.append(f"[{vi}:a]volume=1.0[audio_out]")
