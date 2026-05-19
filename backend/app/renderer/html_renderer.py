@@ -146,6 +146,7 @@ async def render_html_scenes(
                     "start": scene.start,
                     "end": scene.end,
                     "template": scene.template,
+                    "role": scene.role,
                     "props": scene.props.model_dump(),
                 }
                 await page.add_init_script(

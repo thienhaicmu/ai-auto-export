@@ -261,6 +261,7 @@ def _map_to_timeline(
             start=round(t, 3),
             end=round(end, 3),
             template="viral",
+            role=gs.role,
             props=props,
         ))
         t = end

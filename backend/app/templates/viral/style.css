@@ -1,7 +1,8 @@
-/* Viral template — cinematic dark kinetic typography.
-   RULES: CSS @keyframes only. No setTimeout/setInterval.
-   All dimensions in vw/vh so layout scales correctly at any viewport size
-   (preview 480x854, final 1080x1920). */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Viral template — Phase 3A: Premium Motion System
+   RULES: CSS @keyframes only. No setTimeout / setInterval.
+   All dimensions in vw/vh — scales at both 480×854 (preview) and 1080×1920 (final).
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -9,85 +10,166 @@
   padding: 0;
 }
 
+/* ── Motion tokens ──────────────────────────────────────────────────────────── */
+
 :root {
-  --accent: #7C5CFF;
+  /* Easing curves */
+  --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-back: cubic-bezier(0.34, 1.45, 0.64, 1);
+
+  /* Durations */
+  --dur-xs: 0.28s;
+  --dur-sm: 0.42s;
+  --dur-md: 0.65s;
+  --dur-lg: 0.92s;
+
+  /* Color — overridden by scene.js from role + props */
+  --accent:      #7C5CFF;
   --accent-glow: rgba(124, 92, 255, 0.45);
-  --accent-dim: rgba(124, 92, 255, 0.18);
-  --highlight: #F5F5F7;
-  --subtext: rgba(245, 245, 247, 0.72);
-  --bg: #08080E;
+  --accent-dim:  rgba(124, 92, 255, 0.15);
+  --text-hero:   #FFFFFF;
+  --text-sub:    rgba(255, 255, 255, 0.80);
+  --bg-base:     #06060E;
+
+  /* Depth / glow */
+  --blur-bg:  3px;
+  --halo-x:   50%;         /* seed-adjusted by scene.js */
+
+  /* Safe margins — subtitle clearance at bottom */
+  --safe-x:      7vw;
+  --safe-top:    12vh;
+  --safe-bottom: 24vh;
+
+  /* Headline size — set by scene.js (word-count + seed variation) */
+  --headline-size: 12vw;
+
+  /* Scene duration — set by scene.js */
+  --scene-duration: 6s;
 }
+
+/* ── Role colour fallbacks (scene.js inline vars take priority) ─────────── */
+
+[data-role="hook"]       { --accent: #FF3D2E; --accent-glow: rgba(255,61,46,0.45);  --accent-dim: rgba(255,61,46,0.15);  }
+[data-role="context"]    { --accent: #00C2E0; --accent-glow: rgba(0,194,224,0.45);  --accent-dim: rgba(0,194,224,0.15);  }
+[data-role="escalation"] { --accent: #FF8C00; --accent-glow: rgba(255,140,0,0.45);  --accent-dim: rgba(255,140,0,0.15);  }
+[data-role="twist"]      { --accent: #FFD700; --accent-glow: rgba(255,215,0,0.45);  --accent-dim: rgba(255,215,0,0.15);  }
+[data-role="payoff"]     { --accent: #06D6A0; --accent-glow: rgba(6,214,160,0.45);  --accent-dim: rgba(6,214,160,0.15);  }
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
 
 html, body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: var(--bg);
+  background: var(--bg-base);
   font-family: 'NotoSans', 'NotoSansCJK', sans-serif;
   -webkit-font-smoothing: antialiased;
   user-select: none;
 }
 
-/* ── Background image ────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Background layers (bottom → top): #bg → #gradient-halo → #inner-glow
+                                      → #vignette → #noise → #content
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Background image + Ken Burns zoom ──────────────────────────────────────── */
 
 #bg {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
-  animation: bgReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* Combined: fade-in opacity + slow Ken Burns zoom over full scene duration */
+  animation: bgReveal var(--scene-duration) var(--ease-out) both;
+  will-change: transform, opacity;
 }
 
-/* Dark gradient over the background image */
+/* Base overlay — very light when no image (halo provides the colour) */
 #bg::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(8, 8, 14, 0.25) 0%,
-    rgba(8, 8, 14, 0.55) 45%,
-    rgba(8, 8, 14, 0.88) 100%
+    rgba(6, 6, 14, 0.08) 0%,
+    rgba(6, 6, 14, 0.14) 100%
   );
 }
 
-/* ── Gradient halo — cinematic top-center glow ──────────────────────────── */
+/* ── Background image: blur + strong dark gradient ──────────────────────────── */
+
+.has-bg #bg {
+  filter: blur(var(--blur-bg)) saturate(0.82);
+  /* scale(1.08) in bgReveal compensates for blur-edge bleed */
+}
+
+.has-bg #bg::after {
+  background: linear-gradient(
+    180deg,
+    rgba(6, 6, 14, 0.18) 0%,
+    rgba(6, 6, 14, 0.52) 38%,
+    rgba(6, 6, 14, 0.88) 70%,
+    rgba(6, 6, 14, 0.97) 100%
+  );
+}
+
+/* ── Gradient halo — role-tinted cinematic top glow ─────────────────────────── */
 
 #gradient-halo {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 40% at 50% 5%, rgba(124, 92, 255, 0.20) 0%, transparent 70%),
-    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(8, 8, 14, 0.8) 0%, transparent 70%);
+    radial-gradient(ellipse 72% 36% at var(--halo-x) 5%, var(--accent-glow) 0%, transparent 68%),
+    radial-gradient(ellipse 88% 48% at 50% 102%,  rgba(6, 6, 14, 0.72) 0%, transparent 65%);
   pointer-events: none;
-  animation: haloFadeIn 1.2s ease both;
+  animation: layerFadeIn var(--dur-lg) 0.15s ease both;
 }
 
-/* ── Vignette — darkens edges ────────────────────────────────────────────── */
+/* ── Inner glow — role-coloured mid-frame depth layer ───────────────────────── */
+
+#inner-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 58% 30% at 50% 68%, var(--accent-glow) 0%, transparent 62%);
+  opacity: 0;
+  pointer-events: none;
+  animation: layerFadeIn var(--dur-lg) 0.75s ease forwards;
+}
+
+/* Stronger breathing glow on gradient-only (no-image) scenes */
+html:not(.has-bg) #inner-glow {
+  background: radial-gradient(ellipse 65% 36% at 50% 68%, var(--accent-glow) 0%, transparent 56%);
+  animation: layerFadeIn var(--dur-lg) 0.75s ease forwards,
+             glowBreathe 5.5s 2.2s ease-in-out infinite;
+}
+
+/* ── Vignette — cinematic edge darkening ─────────────────────────────────────── */
 
 #vignette {
   position: absolute;
   inset: 0;
   background: radial-gradient(
-    ellipse 85% 85% at 50% 50%,
-    transparent 55%,
-    rgba(4, 4, 8, 0.75) 100%
+    ellipse 88% 88% at 50% 50%,
+    transparent 46%,
+    rgba(4, 4, 10, 0.84) 100%
   );
   pointer-events: none;
 }
 
-/* ── Film grain noise ────────────────────────────────────────────────────── */
+/* ── Film grain ──────────────────────────────────────────────────────────────── */
 
 #noise {
   position: absolute;
   inset: 0;
-  opacity: 0.035;
+  opacity: 0.030;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size: 128px;
   pointer-events: none;
 }
 
-/* ── Content area ────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Content
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 #content {
   position: absolute;
@@ -95,54 +177,76 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 8vh 6vw;
+  justify-content: center;          /* gradient-only: centred */
+  padding: var(--safe-top) var(--safe-x) var(--safe-bottom);
   gap: 0;
 }
 
-/* ── Top label ───────────────────────────────────────────────────────────── */
+/* With bg image: anchor content to lower portion so image shows above */
+.has-bg #content {
+  justify-content: flex-end;
+}
+
+/* ── Role label ──────────────────────────────────────────────────────────────── */
 
 #label {
-  font-size: 2.4vw;
+  display: flex;
+  align-items: center;
+  gap: 1.6vw;
+  font-size: clamp(9px, 2vw, 24px);
   font-weight: 700;
-  letter-spacing: 0.35em;
+  letter-spacing: 0.42em;
   text-transform: uppercase;
   color: var(--accent);
   opacity: 0;
-  animation: fadeSlideUp 0.45s 0.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  margin-bottom: 3.5vw;
+  margin-bottom: 3.2vw;
+  animation: labelReveal var(--dur-sm) 0.10s var(--ease-out) forwards;
 }
 
-/* ── Headline wrapper (overflow:hidden enables the reveal clip) ──────────── */
+/* Live dot indicator */
+#label::before {
+  content: '';
+  flex-shrink: 0;
+  display: block;
+  width: clamp(6px, 1.3vw, 14px);
+  height: clamp(6px, 1.3vw, 14px);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 1.4vw var(--accent-glow), 0 0 0.5vw var(--accent);
+  animation: dotPulse 2.0s 1.0s ease-in-out infinite;
+}
+
+/* ── Headline wrapper — overflow:hidden clips the slide-up reveal ────────────── */
 
 #headline-wrap {
   overflow: hidden;
-  /* Extra vertical padding so descenders aren't clipped at bottom */
-  padding-bottom: 0.5vw;
+  padding-bottom: 0.9vw;    /* extra room so descenders aren't clipped */
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
-/* ── Headline ────────────────────────────────────────────────────────────── */
+/* ── Headline ────────────────────────────────────────────────────────────────── */
 
 #headline {
-  font-size: 12vw;
+  font-size: var(--headline-size, 12vw);
   font-weight: 900;
-  line-height: 1.0;
+  line-height: 0.92;
   text-align: center;
-  color: var(--highlight);
+  color: var(--text-hero);
   text-transform: uppercase;
-  letter-spacing: -0.02em;
-  transform: translateY(110%);
-  animation: headlineReveal 0.65s 0.05s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  letter-spacing: -0.03em;
+  /* Start: below clip + slightly scaled up for impact entry */
+  transform: translateY(110%) scale(1.08);
+  animation: headlineReveal var(--dur-md) 0.05s var(--ease-out) forwards;
   text-shadow:
-    0 0 6vw var(--accent-glow),
-    0 0.4vw 2vw rgba(0, 0, 0, 0.9);
+    0 0   7vw var(--accent-glow),
+    0 0.4vw 3vw rgba(0, 0, 0, 0.95),
+    0 0   0.6vw rgba(255, 255, 255, 0.05);
   word-break: break-word;
 }
 
-/* ── Highlighted words ───────────────────────────────────────────────────── */
+/* ── Highlighted words ───────────────────────────────────────────────────────── */
 
 #headline .hl {
   color: var(--accent);
@@ -152,112 +256,157 @@ html, body {
 #headline .hl::after {
   content: '';
   position: absolute;
-  inset: -0.3vw -0.6vw;
+  inset: -0.25vw -0.5vw;
   background: var(--accent-dim);
-  border-radius: 0.4vw;
+  border-radius: 0.5vw;
   z-index: -1;
-  animation: glowPulse 2.4s ease-in-out infinite;
+  animation: glowPulse 2.2s 1.2s ease-in-out infinite;
 }
 
-/* ── Divider ─────────────────────────────────────────────────────────────── */
+/* ── Divider ─────────────────────────────────────────────────────────────────── */
 
 #divider {
   width: 0;
-  height: 0.15vw;
+  height: 0.18vw;
   min-height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  margin: 4vw 0 3.5vw;
-  animation: expandLine 0.55s 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  margin: 3.8vw 0 3.4vw;
+  opacity: 0;
+  animation: expandLine var(--dur-md) 0.50s var(--ease-out) forwards;
 }
 
-/* ── Subhead ─────────────────────────────────────────────────────────────── */
+/* ── Subhead ─────────────────────────────────────────────────────────────────── */
 
 #subhead {
-  font-size: 3.6vw;
-  font-weight: 400;
+  font-size: clamp(11px, 3.2vw, 38px);
+  font-weight: 500;
   text-align: center;
-  color: var(--subtext);
-  letter-spacing: 0.06em;
+  color: var(--text-sub);
+  letter-spacing: 0.04em;
   opacity: 0;
-  animation: fadeSlideUp 0.5s 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   line-height: 1.5;
-  max-width: 80%;
+  max-width: 84%;
+  text-shadow: 0 0.3vw 2vw rgba(0, 0, 0, 0.9);
+  animation: fadeSlideUp var(--dur-sm) 0.64s var(--ease-out) forwards;
 }
 
-/* ── Progress bar ────────────────────────────────────────────────────────── */
+/* Lower-third chip treatment when background image is present */
+.has-bg #subhead {
+  padding: 1.8vw 3.8vw;
+  border-radius: 0.8vw;
+  background: rgba(6, 6, 14, 0.65);
+  border-top: 0.22vw solid var(--accent-glow);
+  margin-top: 3.2vw;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Chrome elements
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Progress bar ────────────────────────────────────────────────────────────── */
 
 #progress-bar {
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 0.25vw;
+  height: 0.28vw;
   min-height: 3px;
-  background: linear-gradient(90deg, var(--accent), #C4ADFF);
-  animation: progressGrow var(--scene-duration, 6s) linear forwards;
+  background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.55));
+  animation: progressGrow var(--scene-duration) linear forwards;
   transform-origin: left;
+  opacity: 0.88;
 }
 
-/* ── Scene index badge ───────────────────────────────────────────────────── */
+/* ── Scene badge ─────────────────────────────────────────────────────────────── */
 
 #badge {
   position: absolute;
-  top: 4vw;
-  right: 4vw;
-  width: 6vw;
-  height: 6vw;
-  min-width: 36px;
-  min-height: 36px;
+  top: 4.5vw;
+  right: 4.5vw;
+  width: clamp(32px, 6.5vw, 72px);
+  height: clamp(32px, 6.5vw, 72px);
   border-radius: 50%;
-  background: transparent;
-  border: 0.2vw solid rgba(124, 92, 255, 0.5);
+  border: 0.22vw solid rgba(255, 255, 255, 0.20);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.9vw;
+  font-size: clamp(8px, 2vw, 22px);
   font-weight: 700;
-  color: rgba(124, 92, 255, 0.85);
+  color: rgba(255, 255, 255, 0.55);
   opacity: 0;
-  animation: fadeIn 0.4s 0.9s ease forwards;
+  animation: fadeIn 0.35s 0.9s ease forwards;
 }
 
-/* ── Keyframes ───────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Keyframes
+   ═══════════════════════════════════════════════════════════════════════════ */
 
+/*
+  Background: opacity 0→1 in first 13% of scene, then Ken Burns zoom 1.08→1.00
+  over the full scene duration. The scale(1.08) start also compensates for
+  blur-edge bleed when filter:blur is applied via .has-bg.
+*/
 @keyframes bgReveal {
-  from { opacity: 0; transform: scale(1.06); }
-  to   { opacity: 1; transform: scale(1); }
+  0%   { opacity: 0; transform: scale(1.08); }
+  13%  { opacity: 1; transform: scale(1.065); }
+  100% { opacity: 1; transform: scale(1.00); }
 }
 
-@keyframes haloFadeIn {
+/* Generic fade-in for halo and inner-glow layers */
+@keyframes layerFadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-/* Slide-up reveal: text starts below clip boundary, moves to natural position */
+/* Inner glow subtle breathing on gradient-only scenes (scale only, no opacity) */
+@keyframes glowBreathe {
+  0%, 100% { transform: scale(1.00); }
+  50%       { transform: scale(1.14); }
+}
+
+/* Label: tracking-expansion + opacity */
+@keyframes labelReveal {
+  from { opacity: 0; letter-spacing: 0.72em; }
+  to   { opacity: 1; letter-spacing: 0.42em; }
+}
+
+/* Live dot: size and glow pulse */
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 1.2vw var(--accent-glow); transform: scale(1.00); }
+  50%       { box-shadow: 0 0 2.5vw var(--accent-glow); transform: scale(1.18); }
+}
+
+/* Headline: slide up from below clip boundary + scale-impact entry */
 @keyframes headlineReveal {
-  from { transform: translateY(110%); }
-  to   { transform: translateY(0); }
+  0%   { transform: translateY(110%) scale(1.08); }
+  100% { transform: translateY(0)    scale(1.00); }
 }
 
+/* Subhead / generic fade + lift */
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(1.5vw); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(2vw); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 
+/* Divider line expand from centre */
 @keyframes expandLine {
-  from { width: 0; }
-  to   { width: 26vw; }
+  from { width: 0;    opacity: 0; }
+  to   { width: 22vw; opacity: 0.70; }
 }
 
+/* Highlighted word background glow pulse (runs during hold phase) */
 @keyframes glowPulse {
-  0%, 100% { opacity: 0.3; }
-  50%       { opacity: 0.8; }
+  0%, 100% { opacity: 0.22; }
+  50%       { opacity: 0.70; }
 }
 
+/* Generic opacity fade-in */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
+/* Progress bar: grows left→right over full scene duration */
 @keyframes progressGrow {
   from { width: 0; }
   to   { width: 100%; }

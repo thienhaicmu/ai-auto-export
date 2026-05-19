@@ -24,6 +24,7 @@ class Scene(BaseModel):
     start: float
     end: float
     template: str
+    role: str = ""        # hook | context | escalation | twist | payoff
     props: SceneProps
 
 
