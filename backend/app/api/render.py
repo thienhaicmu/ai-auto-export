@@ -27,7 +27,9 @@ from app.services.event_bus import event_bus
 from app.utils.lang import detect_language
 from app.utils.slug import output_filename
 from app.providers.llm import get_llm_provider
+from app.providers.assets import get_asset_provider
 from app.agents.scene_agent import generate_scene_timeline
+from app.agents.asset_agent import fetch_scene_assets
 from app.renderer.subtitle import generate_ass_subtitles
 from app.renderer.html_renderer import render_html_scenes
 from app.renderer.ffmpeg_encoder import encode
@@ -162,7 +164,27 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "scene_count": len(timeline.scenes),
         })
 
-        # 6. Generate silent voice placeholder (edge-tts wired in Phase 3)
+        # 6. Asset fetch — background images for each scene
+        asset_provider = get_asset_provider()
+        log.info(
+            "Fetching scene assets for job %s via %s",
+            job_id, type(asset_provider).__name__,
+        )
+        asset_results = await fetch_scene_assets(
+            timeline=timeline,
+            job_id=job_id,
+            job_temp=job_temp,
+            provider=asset_provider,
+            keyword=req.keyword,
+        )
+        assets_found = sum(1 for v in asset_results.values() if v)
+        await emit("assets.selected", {
+            "variant_id": variant_id,
+            "assets_found": assets_found,
+            "total_scenes": len(timeline.scenes),
+        })
+
+        # 8. Generate silent voice placeholder (edge-tts wired in Phase 3)
         voice_path = job_temp / "voice.wav"
         _generate_silent_wav(voice_path, req.duration_seconds)
         timeline.audio.voice_track = str(voice_path)
@@ -171,7 +193,7 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "duration_seconds": req.duration_seconds,
         })
 
-        # 7. Generate ASS subtitles
+        # 9. Generate ASS subtitles
         sub_path = job_temp / "subs.ass"
         generate_ass_subtitles(timeline, sub_path)
         timeline.subtitles.path = str(sub_path)

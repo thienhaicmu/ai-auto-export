@@ -77,48 +77,64 @@ class MockLLMAdapter:
         total = int(m.group(1)) if m else 30
         scene_dur = round(total / 5, 1)
 
+        kw_words = kw.lower().split()[:2]
         return json.dumps({
             "hook": f"{kw_up} — the truth they don't want you to know",
             "scenes": [
                 {
                     "index": 0,
+                    "role": "hook",
                     "duration_seconds": scene_dur,
                     "headline": kw_up,
                     "subhead": "The untold story",
                     "highlight_word_indices": [0],
                     "animation_seed": 1000,
+                    "visual_keywords": kw_words + ["shocking", "breaking"],
+                    "emotional_tone": "shocking",
                 },
                 {
                     "index": 1,
+                    "role": "context",
                     "duration_seconds": scene_dur,
                     "headline": "WHAT THEY",
                     "subhead": "Hidden for years",
                     "highlight_word_indices": [],
                     "animation_seed": 1037,
+                    "visual_keywords": kw_words + ["background", "history"],
+                    "emotional_tone": "curious",
                 },
                 {
                     "index": 2,
+                    "role": "escalation",
                     "duration_seconds": scene_dur,
                     "headline": "DON'T WANT",
                     "subhead": "Exposed at last",
                     "highlight_word_indices": [],
                     "animation_seed": 1074,
+                    "visual_keywords": kw_words + ["tension", "conflict"],
+                    "emotional_tone": "tense",
                 },
                 {
                     "index": 3,
+                    "role": "twist",
                     "duration_seconds": scene_dur,
                     "headline": "YOU TO KNOW",
                     "subhead": "The real truth",
                     "highlight_word_indices": [],
                     "animation_seed": 1111,
+                    "visual_keywords": kw_words + ["reveal", "surprise"],
+                    "emotional_tone": "revelatory",
                 },
                 {
                     "index": 4,
+                    "role": "payoff",
                     "duration_seconds": scene_dur,
                     "headline": "FIND OUT NOW",
                     "subhead": "Watch till the end",
                     "highlight_word_indices": [],
                     "animation_seed": 1148,
+                    "visual_keywords": kw_words + ["success", "victory"],
+                    "emotional_tone": "triumphant",
                 },
             ],
         })

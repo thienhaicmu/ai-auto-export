@@ -46,7 +46,10 @@
       "PowerShell(Stop-Process -Id 23308 -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; $proc = Start-Process -FilePath \"d:\\\\ai-auto-export\\\\backend\\\\.venv\\\\Scripts\\\\python.exe\" -ArgumentList \"-m\",\"uvicorn\",\"app.main:app\",\"--host\",\"127.0.0.1\",\"--port\",\"8765\",\"--log-level\",\"info\" -WorkingDirectory \"d:\\\\ai-auto-export\\\\backend\" -PassThru -RedirectStandardOutput \"d:\\\\ai-auto-export\\\\backend\\\\logs\\\\server.log\" -RedirectStandardError \"d:\\\\ai-auto-export\\\\backend\\\\logs\\\\server.err\"; Write-Host \"Backend PID: $\\($proc.Id\\)\"; Start-Sleep -Seconds 4; Get-Content \"d:\\\\ai-auto-export\\\\backend\\\\logs\\\\server.err\" -Tail 5 -ErrorAction SilentlyContinue)",
       "PowerShell(ffprobe -v quiet -print_format json -show_streams -show_format \"d:\\\\ai-auto-export\\\\backend\\\\output\\\\karen_viral_01.mp4\" | ConvertFrom-Json | ForEach-Object { Write-Host \"Duration: $\\($_.format.duration\\)s\"; Write-Host \"Size: $\\($_.format.size\\) bytes\"; $_.streams | ForEach-Object { Write-Host \"Stream: $\\($_.codec_type\\) $\\($_.codec_name\\) $\\($_.width\\)x$\\($_.height\\) fps=$\\($_.r_frame_rate\\)\" } })",
       "Bash(cd /d d:\\\\ai-auto-export\\\\backend)",
-      "Bash(uv sync *)"
+      "Bash(uv sync *)",
+      "Bash(Get-ChildItem -Path \"d:\\\\ai-auto-export\\\\backend\\\\app\\\\providers\" -Recurse -Force)",
+      "Bash(Select-Object FullName)",
+      "Bash(.venvScriptspython.exe -c ' *)"
     ]
   }
 }

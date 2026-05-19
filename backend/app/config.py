@@ -12,10 +12,16 @@ class Settings(BaseSettings):
     # Provider selection
     llm_provider: str = "gemini"
     tts_provider: str = "mock"
+    asset_provider: str = "mock"
 
     # Gemini config (only used when llm_provider=gemini)
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-2.0-flash"
+
+    # Asset provider API keys (only used when asset_provider matches)
+    pexels_api_key: str | None = None
+    pixabay_api_key: str | None = None
+    unsplash_access_key: str | None = None
 
     # Render limits
     max_concurrent_variants: int = 2

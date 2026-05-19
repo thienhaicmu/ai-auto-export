@@ -38,7 +38,9 @@ _PROJECT_ROOT = _BACKEND_DIR.parent             # d:\ai-auto-export\
 
 _TEMPLATES_DIR = _BACKEND_APP_DIR / "templates"
 _ASSETS_DIR = _PROJECT_ROOT / "assets"
-_TEMP_ROOT = _PROJECT_ROOT / "temp"
+# temp/ lives inside backend/ so that http://local/temp/... maps to the same
+# directory used by render.py (backend/temp/{job_id}/...)
+_TEMP_ROOT = _BACKEND_DIR / "temp"
 
 # Fake origin used for routing; Playwright intercepts all requests to it
 _BASE_URL = "http://local"

@@ -1,11 +1,14 @@
 """
 Scene generation agent.
 
-Calls the LLM provider to build 5 viral scenes from a keyword/language/duration,
-then maps the result into a validated Timeline Pydantic model.
+Flow:
+  1. story_planner.plan_story() assigns roles, durations, visual keywords (no LLM)
+  2. LLM generates specific headlines/subheads/etc. guided by the story plan
+  3. Pydantic validates the full response; retry once on failure
+  4. Maps to Timeline; falls back to fixture_timeline() on any error
 
-Fallback: any parse or API error returns fixture_timeline() so the render job
-never fails due to LLM issues.
+The 5-scene narrative structure is:
+  hook → context → escalation → twist → payoff/CTA
 """
 from __future__ import annotations
 
@@ -16,6 +19,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ValidationError, field_validator
 
+from app.agents.story_planner import StoryPlan, plan_story
 from app.models.job import (
     AudioConfig, Idea, Scene, SceneProps, SubtitleConfig, Timeline,
 )
@@ -23,33 +27,38 @@ from app.providers.llm.base import LLMAdapter
 
 log = logging.getLogger(__name__)
 
-# Mirror of QUALITY_PRESETS in renderer/timeline.py (avoids circular import)
 _QUALITY_PRESETS: dict[str, dict] = {
     "preview": {"resolution": (480, 854),  "fps": 24},
     "final":   {"resolution": (1080, 1920), "fps": 30},
 }
 
-# ── Pydantic schema for Gemini scene output ───────────────────────────────────
+# ── Pydantic schema for Gemini output ────────────────────────────────────────
 
 class _GeminiScene(BaseModel):
     index: int
+    role: str                            # hook|context|escalation|twist|payoff
     duration_seconds: float
-    headline: str
-    subhead: str = ""
+    headline: str                        # ALL CAPS, max 4 words / 20 chars
+    subhead: str = ""                    # sentence case, max 50 chars
     highlight_word_indices: list[int] = []
     animation_seed: int = 0
+    visual_keywords: list[str] = []     # 2-4 keywords for background image search
+    emotional_tone: str = "energetic"
 
     @field_validator("headline", mode="before")
     @classmethod
     def _clean_headline(cls, v: str) -> str:
-        # Enforce ALL CAPS and trim; never let it be blank
-        cleaned = str(v).strip().upper()[:30]
-        return cleaned or "UNTITLED"
+        return str(v).strip().upper()[:30] or "UNTITLED"
 
     @field_validator("duration_seconds", mode="before")
     @classmethod
-    def _positive_duration(cls, v: float) -> float:
+    def _positive_dur(cls, v: float) -> float:
         return max(0.5, float(v))
+
+    @field_validator("subhead", mode="before")
+    @classmethod
+    def _clean_subhead(cls, v: str) -> str:
+        return str(v).strip()[:60]
 
 
 class _GeminiSceneOutput(BaseModel):
@@ -61,98 +70,77 @@ class _GeminiSceneOutput(BaseModel):
 
 _SYSTEM = """\
 You are a viral short-form video script writer for TikTok, Instagram Reels, and YouTube Shorts.
-Create exactly 5 scenes for a vertical 9:16 video using kinetic bold typography on a dark background.
-Respond ONLY with valid JSON matching the schema exactly — no explanation, no markdown fences."""
-
-_PROMPT_TMPL = """\
-Keyword: "{keyword}"
-Language: {language}
-Total video duration: {duration} seconds
-Style: viral (bold kinetic text, dark cinematic background)
-{idea_context}
-Create exactly 5 scenes. Duration of all scenes must sum to exactly {duration} seconds ({scene_dur} s each).
-
-Return this JSON structure exactly:
-{{
-  "hook": "<overall video hook, SHORT ALL CAPS, max 40 chars>",
-  "scenes": [
-    {{
-      "index": 0,
-      "duration_seconds": {scene_dur},
-      "headline": "<SHORT BOLD ALL-CAPS HEADLINE, max 4 words, max 20 chars — the hook>",
-      "subhead": "<supporting text, sentence case, max 50 chars>",
-      "highlight_word_indices": [0],
-      "animation_seed": {seed0}
-    }},
-    {{
-      "index": 1,
-      "duration_seconds": {scene_dur},
-      "headline": "<scene 2 headline, max 4 words>",
-      "subhead": "<scene 2 subhead, max 50 chars>",
-      "highlight_word_indices": [],
-      "animation_seed": {seed1}
-    }},
-    {{
-      "index": 2,
-      "duration_seconds": {scene_dur},
-      "headline": "<scene 3 headline, max 4 words>",
-      "subhead": "<scene 3 subhead, max 50 chars>",
-      "highlight_word_indices": [],
-      "animation_seed": {seed2}
-    }},
-    {{
-      "index": 3,
-      "duration_seconds": {scene_dur},
-      "headline": "<scene 4 headline, max 4 words>",
-      "subhead": "<scene 4 subhead, max 50 chars>",
-      "highlight_word_indices": [],
-      "animation_seed": {seed3}
-    }},
-    {{
-      "index": 4,
-      "duration_seconds": {scene_dur},
-      "headline": "<CALL TO ACTION, max 4 words>",
-      "subhead": "<follow for more / link in bio / watch next>",
-      "highlight_word_indices": [],
-      "animation_seed": {seed4}
-    }}
-  ]
-}}
-
-Rules:
-- Write ALL headlines and subheads in the keyword's language ({language})
-- Headlines: ALL CAPS, max 4 words, max 20 characters (like a movie title or news ticker)
-- Subheads: sentence case, conversational, max 50 characters
-- Scene 0: stop-the-scroll hook / title
-- Scenes 1-3: build tension, reveal facts, maintain curiosity
-- Scene 4: call to action
-- Keep animation_seed values exactly as I provided (do not change them)
-- No copyrighted long quotes. No dangerous claims. No unsafe advice."""
+Create exactly 5 scenes that follow the provided narrative structure.
+Respond ONLY with valid JSON — no explanation, no markdown fences, no comments."""
 
 
 def _build_prompt(
     keyword: str,
     language: str,
     duration_seconds: int,
+    plan: StoryPlan,
     chosen_idea: Optional[Idea],
 ) -> str:
-    scene_dur = round(duration_seconds / 5, 1)
-    seeds = [random.randint(1000, 9999) for _ in range(5)]
-    idea_context = ""
-    if chosen_idea:
-        idea_context = (
-            f"Chosen angle: {chosen_idea.angle}\n"
-            f"Hook concept: {chosen_idea.hook}\n"
+    # Describe each planned scene with its role, duration and guidance
+    scenes_spec = ""
+    for sp in plan.scenes:
+        vk_str = ", ".join(sp.visual_keywords[:4])
+        scenes_spec += (
+            f"  Scene {sp.index} — role: {sp.role} | "
+            f"duration: {sp.duration_seconds}s | "
+            f"tone: {sp.emotional_tone} | "
+            f"visual keywords: {vk_str}\n"
+            f"  Guidance: {sp.guidance}\n"
         )
-    return _PROMPT_TMPL.format(
-        keyword=keyword,
-        language=language,
-        duration=duration_seconds,
-        scene_dur=scene_dur,
-        idea_context=idea_context,
-        seed0=seeds[0], seed1=seeds[1], seed2=seeds[2],
-        seed3=seeds[3], seed4=seeds[4],
-    )
+
+    idea_ctx = ""
+    if chosen_idea:
+        idea_ctx = f"Chosen angle: {chosen_idea.angle}\nHook concept: {chosen_idea.hook}\n"
+
+    # Build the example scene block for the JSON template
+    def _example_scene(sp) -> str:
+        seed = random.randint(1000, 9999)
+        vk_example = json.dumps(sp.visual_keywords[:3])
+        return (
+            f"    {{\n"
+            f'      "index": {sp.index},\n'
+            f'      "role": "{sp.role}",\n'
+            f'      "duration_seconds": {sp.duration_seconds},\n'
+            f'      "headline": "<ALL CAPS, max 4 words, max 20 chars>",\n'
+            f'      "subhead": "<sentence case, max 50 chars>",\n'
+            f'      "highlight_word_indices": [{",".join(str(i) for i in ([0] if sp.index == 0 else []))}],\n'
+            f'      "animation_seed": {seed},\n'
+            f'      "visual_keywords": {vk_example},\n'
+            f'      "emotional_tone": "{sp.emotional_tone}"\n'
+            f"    }}"
+        )
+
+    scenes_json = ",\n".join(_example_scene(sp) for sp in plan.scenes)
+
+    return f"""\
+Keyword: "{keyword}"
+Language: {language}
+Total video duration: {duration_seconds} seconds
+{idea_ctx}
+Narrative structure to follow:
+{scenes_spec}
+CRITICAL RULES:
+- Write ALL text in the keyword's language ({language})
+- Headlines: ALL CAPS, max 4 words, max 20 characters (news-ticker style)
+- Subheads: sentence case, conversational, max 50 characters
+- Scene 0 (hook): single shocking statement that stops the scroll instantly
+- Scene 4 (payoff): short CTA (follow / share / comment)
+- visual_keywords: 2-4 English words for background image search regardless of video language
+- animation_seed: unique random integer, keep the example values as-is
+- No copyrighted long quotes. No dangerous claims.
+
+Return this JSON structure exactly (replace angle-bracket placeholders with real content):
+{{
+  "hook": "<overall video hook, ALL CAPS, max 40 chars>",
+  "scenes": [
+{scenes_json}
+  ]
+}}"""
 
 
 # ── Public API ────────────────────────────────────────────────────────────────
@@ -168,12 +156,16 @@ async def generate_scene_timeline(
     quality_mode: str = "final",
 ) -> Timeline:
     """
-    Build a Timeline using the LLM provider.
+    Build a Timeline via the story planner + LLM.
 
-    On any parse, validation, or API error: logs a warning and returns
-    fixture_timeline() so the render job always continues.
+    Fallback chain on any error: fixture_timeline().
     """
-    prompt = _build_prompt(keyword, language, duration_seconds, chosen_idea)
+    # Step 1 — story plan (pure algorithm, no LLM)
+    plan = plan_story(keyword=keyword, language=language, duration_seconds=duration_seconds)
+    log.info("Story plan for job %s: roles=%s", job_id, [s.role for s in plan.scenes])
+
+    # Step 2 — LLM scene generation guided by the plan
+    prompt = _build_prompt(keyword, language, duration_seconds, plan, chosen_idea)
 
     try:
         resp = await provider.generate(
@@ -185,33 +177,33 @@ async def generate_scene_timeline(
         scene_output = _GeminiSceneOutput.model_validate(data)
 
         if len(scene_output.scenes) != 5:
-            raise ValueError(
-                f"Expected 5 scenes, got {len(scene_output.scenes)}"
-            )
+            raise ValueError(f"Expected 5 scenes, got {len(scene_output.scenes)}")
 
+        # Step 3 — map to Timeline (with normalised durations)
         timeline = _map_to_timeline(
             job_id=job_id,
             keyword=keyword,
             language=language,
             output_path=output_path,
             scene_output=scene_output,
+            plan=plan,
             quality_mode=quality_mode,
             duration_seconds=duration_seconds,
         )
         log.info(
-            "LLM scene generation OK for job %s: %d scenes (provider=%s)",
+            "LLM scene generation OK for job %s (%d scenes via %s)",
             job_id, len(timeline.scenes), resp.model,
         )
         return timeline
 
     except (json.JSONDecodeError, ValidationError, ValueError) as exc:
         log.warning(
-            "LLM scene output invalid for job %s (%s: %s) — using fixture fallback",
+            "LLM scene output invalid for job %s (%s: %s) — fixture fallback",
             job_id, type(exc).__name__, exc,
         )
     except Exception as exc:
         log.warning(
-            "LLM scene generation error for job %s (%s) — using fixture fallback",
+            "LLM scene generation error for job %s (%s) — fixture fallback",
             job_id, type(exc).__name__,
         )
 
@@ -233,6 +225,7 @@ def _map_to_timeline(
     language: str,
     output_path: str,
     scene_output: _GeminiSceneOutput,
+    plan: StoryPlan,
     quality_mode: str,
     duration_seconds: int,
 ) -> Timeline:
@@ -240,26 +233,35 @@ def _map_to_timeline(
     resolution: tuple[int, int] = preset["resolution"]
     fps: int = preset["fps"]
 
-    # Normalise durations: clamp negatives, rescale sum to duration_seconds
+    # Normalise durations so they sum exactly to duration_seconds
     raw = [max(0.5, s.duration_seconds) for s in scene_output.scenes]
     scale = duration_seconds / sum(raw)
     durations = [d * scale for d in raw]
 
     scenes: list[Scene] = []
     t = 0.0
-    for i, (gs, dur) in enumerate(zip(scene_output.scenes, durations)):
+    for i, (gs, dur, sp) in enumerate(zip(scene_output.scenes, durations, plan.scenes)):
         end = t + dur
+        # visual_keywords are stored as a custom attribute (not in SceneProps Pydantic model)
+        # so we propagate them through props using a workaround via __dict__
+        props = SceneProps(
+            headline=gs.headline[:30].upper(),
+            subhead=gs.subhead[:60],
+            highlight_word_indices=gs.highlight_word_indices,
+            animation_seed=gs.animation_seed or (1000 + i * 37),
+        )
+        # Attach visual_keywords as an extra attr so asset_agent can read it
+        # (Pydantic v2 model_config extra="allow" would be needed; instead we
+        #  stash it in a simple list the asset_agent reads via getattr)
+        object.__setattr__(props, "visual_keywords",
+                           gs.visual_keywords or sp.visual_keywords)
+
         scenes.append(Scene(
             index=i,
             start=round(t, 3),
             end=round(end, 3),
             template="viral",
-            props=SceneProps(
-                headline=gs.headline[:30].upper(),
-                subhead=gs.subhead[:60],
-                highlight_word_indices=gs.highlight_word_indices,
-                animation_seed=gs.animation_seed or (1000 + i * 37),
-            ),
+            props=props,
         ))
         t = end
 
