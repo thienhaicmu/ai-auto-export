@@ -27,6 +27,7 @@ import shutil
 from pathlib import Path
 from typing import Awaitable, Callable
 
+from app.config import settings
 from app.models.job import Timeline
 
 log = logging.getLogger(__name__)
@@ -46,18 +47,35 @@ def _find_ffmpeg() -> str:
     return ffmpeg
 
 
-async def _run(cmd: list[str]) -> None:
-    """Run FFmpeg subprocess, raise on non-zero exit."""
+async def _run(cmd: list[str], timeout: float = 300.0, stage: str = "ffmpeg") -> None:
+    """
+    Run an FFmpeg subprocess with a hard timeout.
+
+    Raises RuntimeError with a safe, shortened stderr excerpt on failure.
+    Kills the process if the timeout expires (no hanging subprocesses).
+    """
     proc = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    _, stderr = await proc.communicate()
+    try:
+        _, stderr_bytes = await asyncio.wait_for(proc.communicate(), timeout=timeout)
+    except asyncio.TimeoutError:
+        try:
+            proc.kill()
+        except Exception:
+            pass
+        raise RuntimeError(
+            f"[{stage}] FFmpeg timed out after {timeout:.0f}s — process killed"
+        )
+
     if proc.returncode != 0:
-        snippet = stderr.decode(errors="replace")[-600:]
-        log.error("FFmpeg failed (code %d):\n%s", proc.returncode, snippet)
-        raise RuntimeError(f"FFmpeg error (code {proc.returncode}): {snippet}")
+        snippet = stderr_bytes.decode(errors="replace")[-600:]
+        log.error("[%s] FFmpeg failed (code %d):\n%s", stage, proc.returncode, snippet)
+        raise RuntimeError(
+            f"[{stage}] FFmpeg error (code {proc.returncode}): {snippet}"
+        )
 
 
 def _ass_filter_path(path: Path) -> str:
@@ -124,7 +142,11 @@ async def encode(
             str(clip_path),
         ]
         log.info("Encoding scene %d -> %s [%s]", i, clip_path.name, quality_mode)
-        await _run(cmd)
+        await _run(
+            cmd,
+            timeout=float(settings.ffmpeg_scene_encode_timeout),
+            stage=f"encode_scene_{i}",
+        )
 
         # Free disk: delete frames immediately
         shutil.rmtree(frames_dir, ignore_errors=True)
@@ -180,7 +202,7 @@ async def encode(
         str(combined_path),
     ]
     log.info("Concatenating %d clips -> %s", len(scene_clips), combined_path.name)
-    await _run(cmd)
+    await _run(cmd, timeout=60.0, stage="concat")
 
     for clip in scene_clips:
         clip.unlink(missing_ok=True)
@@ -257,7 +279,11 @@ async def encode(
     ]
 
     log.info("Final encode -> %s [%s crf=%s]", output_path, quality_mode, crf)
-    await _run(cmd)
+    await _run(
+        cmd,
+        timeout=float(settings.ffmpeg_final_encode_timeout),
+        stage="final_encode",
+    )
 
     combined_path.unlink(missing_ok=True)
 

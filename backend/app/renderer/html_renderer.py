@@ -19,6 +19,7 @@ http://local/ and maps them to local file paths — no external server needed.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import mimetypes
@@ -26,6 +27,7 @@ import shutil
 from pathlib import Path
 from typing import Awaitable, Callable
 
+from app.config import settings
 from app.models.job import Timeline
 
 log = logging.getLogger(__name__)
@@ -155,18 +157,25 @@ async def render_html_scenes(
 
                 # Navigate — template URL: http://local/templates/viral/index.html
                 template_url = f"{_BASE_URL}/templates/{scene.template}/index.html"
-                await page.goto(template_url, wait_until="domcontentloaded", timeout=30_000)
+                page_load_ms = settings.playwright_page_load_timeout * 1000
+                await page.goto(
+                    template_url,
+                    wait_until="domcontentloaded",
+                    timeout=page_load_ms,
+                )
 
                 # Wait for scene.js to signal SCENE_READY
+                scene_ready_ms = settings.playwright_scene_ready_timeout * 1000
                 try:
                     await page.wait_for_function(
                         "() => window.__SCENE_READY__ === true",
-                        timeout=15_000,
+                        timeout=scene_ready_ms,
                     )
                 except Exception:
                     log.warning(
-                        "Scene %d: __SCENE_READY__ timeout — proceeding anyway",
+                        "Scene %d: __SCENE_READY__ timeout after %ds — proceeding anyway",
                         scene.index,
+                        settings.playwright_scene_ready_timeout,
                     )
 
                 # Pause all CSS animations at t=0 before stepping
@@ -177,34 +186,45 @@ async def render_html_scenes(
                     });
                 }""")
 
-                # Step through every frame deterministically
-                for f in range(n_frames):
-                    t_ms = (f / fps) * 1000.0
+                # Step through every frame deterministically, with a per-scene budget
+                capture_timeout = float(settings.playwright_scene_capture_timeout)
 
-                    # Advance all animations to this exact moment
-                    await page.evaluate(
-                        f"(t) => {{ document.getAnimations().forEach(a => {{ a.currentTime = t; }}); }}",
-                        t_ms,
-                    )
+                async def _capture_frames() -> None:
+                    for f in range(n_frames):
+                        t_ms = (f / fps) * 1000.0
 
-                    frame_path = frames_dir / f"{f:04d}.png"
-                    await page.screenshot(
-                        path=str(frame_path),
-                        clip={"x": 0, "y": 0, "width": width, "height": height},
-                        type="png",
-                    )
-
-                    # Emit progress every 15 frames and on the last frame
-                    if f % 15 == 0 or f == n_frames - 1:
-                        await emit(
-                            "html.capture.progress",
-                            {
-                                "variant_id": variant_id,
-                                "scene_index": scene.index,
-                                "frames_done": f + 1,
-                                "frames_total": n_frames,
-                            },
+                        # Advance all animations to this exact moment
+                        await page.evaluate(
+                            "(t) => { document.getAnimations().forEach(a => { a.currentTime = t; }); }",
+                            t_ms,
                         )
+
+                        frame_path = frames_dir / f"{f:04d}.png"
+                        await page.screenshot(
+                            path=str(frame_path),
+                            clip={"x": 0, "y": 0, "width": width, "height": height},
+                            type="png",
+                        )
+
+                        # Emit progress every 15 frames and on the last frame
+                        if f % 15 == 0 or f == n_frames - 1:
+                            await emit(
+                                "html.capture.progress",
+                                {
+                                    "variant_id": variant_id,
+                                    "scene_index": scene.index,
+                                    "frames_done": f + 1,
+                                    "frames_total": n_frames,
+                                },
+                            )
+
+                try:
+                    await asyncio.wait_for(_capture_frames(), timeout=capture_timeout)
+                except asyncio.TimeoutError:
+                    raise RuntimeError(
+                        f"[html_capture] Scene {scene.index} frame capture timed out "
+                        f"after {capture_timeout:.0f}s"
+                    )
 
                 await page.close()
                 await context.close()

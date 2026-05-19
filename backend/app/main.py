@@ -1,4 +1,8 @@
+import logging
+import shutil
+import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,10 +11,44 @@ from app.config import settings
 from app.logging_setup import setup_logging
 from app.api import health, ws, render, ideas
 
+log = logging.getLogger(__name__)
+
+_BACKEND_DIR = Path(__file__).parent.parent   # backend/
+_TEMP_ROOT   = _BACKEND_DIR / "temp"
+
+
+def _cleanup_orphaned_temp(temp_root: Path, ttl_hours: int) -> None:
+    """
+    Delete job temp dirs that are older than ttl_hours.
+
+    Called once on startup to reclaim disk from crashed/incomplete previous runs.
+    Never touches the output/ directory.
+    """
+    if not temp_root.exists():
+        return
+
+    cutoff = time.time() - ttl_hours * 3600
+    removed = 0
+    for child in temp_root.iterdir():
+        if not child.is_dir():
+            continue
+        try:
+            mtime = child.stat().st_mtime
+        except OSError:
+            continue
+        if mtime < cutoff:
+            shutil.rmtree(child, ignore_errors=True)
+            log.info("Cleaned orphaned temp dir (age > %dh): %s", ttl_hours, child.name)
+            removed += 1
+
+    if removed:
+        log.info("Startup cleanup: removed %d orphaned temp dir(s)", removed)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     setup_logging(settings.log_level)
+    _cleanup_orphaned_temp(_TEMP_ROOT, settings.temp_cleanup_ttl_hours)
     yield
 
 

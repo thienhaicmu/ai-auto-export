@@ -27,9 +27,20 @@ class Settings(BaseSettings):
     max_concurrent_variants: int = 2
     max_event_buffer: int = 500
 
+    # Timeouts (seconds)
+    playwright_page_load_timeout: int = 30
+    playwright_scene_ready_timeout: int = 15
+    playwright_scene_capture_timeout: int = 300   # per-scene frame loop budget
+    ffmpeg_scene_encode_timeout: int = 180        # per-scene clip encode
+    ffmpeg_final_encode_timeout: int = 600        # full final-encode step
+
     # Paths
     temp_dir: str = "temp"
     output_dir: str = "output"
+
+    # Cleanup
+    temp_cleanup_ttl_hours: int = 24   # orphaned temp dirs older than this are deleted on startup
+    preserve_failed_temp: bool = False  # keep temp dir on render failure for debugging
 
 
 settings = Settings()

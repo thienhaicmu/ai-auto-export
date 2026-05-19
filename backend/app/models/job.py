@@ -82,3 +82,5 @@ class JobError(BaseModel):
     stage: str
     message: str
     variant_id: Optional[str] = None
+    recoverable: bool = False
+    detail: Optional[str] = None   # safe for internal logs; never exposed to browser

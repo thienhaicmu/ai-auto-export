@@ -2,12 +2,16 @@
 Render API — POST /api/render/start triggers the pipeline:
   LLM scene generation (Gemini or mock fallback)
   + real Playwright frame capture
-  + real FFmpeg encode.
+  + real FFmpeg encode
+  + ffprobe output QA validation.
 
 WS event order (ARCHITECTURE.md §8):
   job.started -> language.detected -> research.completed -> scripts.generated
-  -> scenes.generated -> voice.generated -> html.capture.progress (xN)
-  -> render.progress (xN) -> video.ready -> job.completed
+  -> scenes.generated -> assets.selected -> voice.generated
+  -> html.capture.progress (xN) -> render.progress (xN)
+  -> video.ready -> job.completed
+
+  On failure: job.error (terminal, includes stage name)
 """
 from __future__ import annotations
 
@@ -23,6 +27,7 @@ from typing import Literal
 from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel
 
+from app.config import settings
 from app.services.event_bus import event_bus
 from app.utils.lang import detect_language
 from app.utils.slug import output_filename
@@ -33,6 +38,7 @@ from app.agents.asset_agent import fetch_scene_assets
 from app.renderer.subtitle import generate_ass_subtitles
 from app.renderer.html_renderer import render_html_scenes
 from app.renderer.ffmpeg_encoder import encode
+from app.renderer.output_validator import validate_output
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -77,19 +83,45 @@ def _generate_silent_wav(path: Path, duration_seconds: float, sample_rate: int =
         wf.writeframes(b"\x00" * n_samples * 4)
 
 
+# ── Cleanup helpers ───────────────────────────────────────────────────────────
+
+def _cleanup_job_temp(job_temp: Path, *, succeeded: bool) -> None:
+    """
+    Remove the job's temp directory.
+
+    On success: delete everything (frames already gone after FFmpeg encode).
+    On failure: delete if preserve_failed_temp is False (default), otherwise
+                keep the directory so it can be inspected for debugging.
+                Either way, large frame directories are removed first to
+                reclaim disk space quickly.
+    """
+    if succeeded:
+        shutil.rmtree(job_temp, ignore_errors=True)
+        log.debug("Cleaned temp dir: %s", job_temp)
+        return
+
+    # Delete frame dirs (bulk of disk usage) regardless of preserve setting
+    for frames_dir in job_temp.rglob("frames"):
+        if frames_dir.is_dir():
+            shutil.rmtree(frames_dir, ignore_errors=True)
+
+    if settings.preserve_failed_temp:
+        log.info("Preserved failed-job temp dir for inspection: %s", job_temp)
+    else:
+        shutil.rmtree(job_temp, ignore_errors=True)
+        log.debug("Cleaned failed-job temp dir: %s", job_temp)
+
+
 # ── Real pipeline ─────────────────────────────────────────────────────────────
 
 async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
     """
-    Phase 2B pipeline:
-      - Language detection (heuristic)
-      - LLM scene generation via Gemini (falls back to mock on error)
-      - Playwright HTML frame capture
-      - FFmpeg encode with quality mode
+    Full render pipeline with per-stage error handling and output QA.
     """
     variant_id = "v01"
     job_temp = _TEMP_ROOT / job_id
     job_temp.mkdir(parents=True, exist_ok=True)
+    succeeded = False
 
     async def emit(event_type: str, data: dict) -> None:
         event = {
@@ -101,6 +133,17 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
         log.debug("emit %s -> %s  data=%s", job_id, event_type, data)
         await event_bus.publish(job_id, event)
 
+    async def fail(stage: str, exc: Exception, *, recoverable: bool = False) -> None:
+        """Emit a structured job.error and log the exception."""
+        msg = str(exc)
+        log.error("[%s] job %s failed at stage '%s': %s", variant_id, job_id, stage, msg)
+        await emit("job.error", {
+            "stage": stage,
+            "message": msg,
+            "variant_id": variant_id,
+            "recoverable": recoverable,
+        })
+
     try:
         # 1. job.started
         await emit("job.started", {
@@ -110,18 +153,22 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "quality_mode": req.quality_mode,
         })
 
-        # 2. Language detection (heuristic — LLM-backed in Phase 3)
-        language = detect_language(req.keyword)
+        # 2. Language detection
+        try:
+            language = detect_language(req.keyword)
+        except Exception as exc:
+            language = "en"
+            log.warning("Language detection failed, defaulting to en: %s", exc)
         await emit("language.detected", {"language": language, "confidence": 0.9})
 
-        # 3. Research context (quick emit — LLM research baked into scene prompt)
+        # 3. Research context
         await asyncio.sleep(0.15)
         await emit("research.completed", {
             "summary": f"Analyzing '{req.keyword}' for viral content angles",
             "angles": ["controversy", "timeline", "viral hook"],
         })
 
-        # 4. Build output path before LLM call so it's available for fallback
+        # 4. Build output path
         output_folder = req.output_folder or str(_BACKEND_DIR / "output")
         final_output_path = output_filename(
             keyword=req.keyword,
@@ -130,24 +177,27 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             output_dir=output_folder,
         )
 
-        # 5. LLM scene generation (Gemini or mock; fixture fallback on error)
-        provider = get_llm_provider()
-        log.info(
-            "Generating scenes for job %s via provider=%s quality=%s",
-            job_id, type(provider).__name__, req.quality_mode,
-        )
-        timeline = await generate_scene_timeline(
-            job_id=job_id,
-            keyword=req.keyword,
-            language=language,
-            duration_seconds=req.duration_seconds,
-            output_path=str(final_output_path),
-            chosen_idea=None,   # Phase 2B: idea lookup not yet implemented
-            provider=provider,
-            quality_mode=req.quality_mode,
-        )
+        # 5. LLM scene generation
+        try:
+            provider = get_llm_provider()
+            log.info(
+                "Generating scenes for job %s via provider=%s quality=%s",
+                job_id, type(provider).__name__, req.quality_mode,
+            )
+            timeline = await generate_scene_timeline(
+                job_id=job_id,
+                keyword=req.keyword,
+                language=language,
+                duration_seconds=req.duration_seconds,
+                output_path=str(final_output_path),
+                chosen_idea=None,
+                provider=provider,
+                quality_mode=req.quality_mode,
+            )
+        except Exception as exc:
+            await fail("scene_generation", exc)
+            return
 
-        # Emit scripts.generated using scene 0 headline as the hook
         hook = timeline.scenes[0].props.headline if timeline.scenes else req.keyword.upper()
         word_count = sum(
             len(s.props.headline.split()) + len(s.props.subhead.split())
@@ -174,78 +224,106 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "visual_direction": vd_summary,
         })
 
-        # 6. Asset fetch — background images for each scene
-        asset_provider = get_asset_provider()
-        log.info(
-            "Fetching scene assets for job %s via %s",
-            job_id, type(asset_provider).__name__,
-        )
-        asset_results = await fetch_scene_assets(
-            timeline=timeline,
-            job_id=job_id,
-            job_temp=job_temp,
-            provider=asset_provider,
-            keyword=req.keyword,
-        )
-        assets_found = sum(1 for v in asset_results.values() if v)
+        # 6. Asset fetch
+        try:
+            asset_provider = get_asset_provider()
+            log.info("Fetching assets for job %s via %s", job_id, type(asset_provider).__name__)
+            asset_results = await fetch_scene_assets(
+                timeline=timeline,
+                job_id=job_id,
+                job_temp=job_temp,
+                provider=asset_provider,
+                keyword=req.keyword,
+            )
+            assets_found = sum(1 for v in asset_results.values() if v)
+        except Exception as exc:
+            log.warning("Asset fetch failed for job %s (%s) — continuing without assets", job_id, exc)
+            assets_found = 0
         await emit("assets.selected", {
             "variant_id": variant_id,
             "assets_found": assets_found,
             "total_scenes": len(timeline.scenes),
         })
 
-        # 8. Generate silent voice placeholder (edge-tts wired in Phase 3)
-        voice_path = job_temp / "voice.wav"
-        _generate_silent_wav(voice_path, req.duration_seconds)
-        timeline.audio.voice_track = str(voice_path)
+        # 7. Voice placeholder
+        try:
+            voice_path = job_temp / "voice.wav"
+            _generate_silent_wav(voice_path, req.duration_seconds)
+            timeline.audio.voice_track = str(voice_path)
+        except Exception as exc:
+            await fail("voice_generation", exc)
+            return
         await emit("voice.generated", {
             "variant_id": variant_id,
             "duration_seconds": req.duration_seconds,
         })
 
-        # 9. Generate ASS subtitles
-        sub_path = job_temp / "subs.ass"
-        generate_ass_subtitles(timeline, sub_path)
-        timeline.subtitles.path = str(sub_path)
+        # 8. Subtitles
+        try:
+            sub_path = job_temp / "subs.ass"
+            generate_ass_subtitles(timeline, sub_path)
+            timeline.subtitles.path = str(sub_path)
+        except Exception as exc:
+            log.warning("Subtitle generation failed for job %s (%s) — continuing without subs", job_id, exc)
+            timeline.subtitles.path = None
 
-        # 8. Playwright frame capture (emits html.capture.progress per scene)
-        log.info("Starting HTML frame capture for job %s", job_id)
-        frame_dirs = await render_html_scenes(
-            timeline=timeline,
-            temp_dir=job_temp,
-            emit=emit,
-            variant_id=variant_id,
-        )
+        # 9. Playwright frame capture
+        try:
+            log.info("Starting HTML frame capture for job %s", job_id)
+            frame_dirs = await render_html_scenes(
+                timeline=timeline,
+                temp_dir=job_temp,
+                emit=emit,
+                variant_id=variant_id,
+            )
+        except Exception as exc:
+            await fail("html_capture", exc)
+            return
 
-        # 9. FFmpeg encode (emits render.progress)
-        log.info("Starting FFmpeg encode for job %s -> %s", job_id, final_output_path)
-        output_path = await encode(
-            timeline=timeline,
-            frame_dirs=frame_dirs,
-            emit=emit,
-            variant_id=variant_id,
-        )
+        # 10. FFmpeg encode
+        try:
+            log.info("Starting FFmpeg encode for job %s -> %s", job_id, final_output_path)
+            output_path = await encode(
+                timeline=timeline,
+                frame_dirs=frame_dirs,
+                emit=emit,
+                variant_id=variant_id,
+            )
+        except Exception as exc:
+            await fail("ffmpeg_encode", exc)
+            return
 
-        # 10. video.ready
+        # 11. Output QA validation — gate on passing before declaring success
+        qa_result = await validate_output(output_path, timeline)
+        if not qa_result.ok:
+            await fail(
+                "output_qa",
+                RuntimeError(qa_result.summary),
+            )
+            return
+
+        # 12. video.ready + job.completed
+        succeeded = True
         await emit("video.ready", {
             "variant_id": variant_id,
             "output_path": str(output_path),
         })
-
-        # 11. job.completed
         await emit("job.completed", {"outputs": [str(output_path)]})
         log.info("Job %s complete [%s] -> %s", job_id, req.quality_mode, output_path)
 
     except Exception as exc:
-        log.exception("Pipeline error for job %s", job_id)
-        await emit("job.error", {
-            "stage": "pipeline",
-            "message": str(exc),
-            "variant_id": variant_id,
-        })
+        log.exception("Unexpected pipeline error for job %s", job_id)
+        try:
+            await emit("job.error", {
+                "stage": "pipeline",
+                "message": str(exc),
+                "variant_id": variant_id,
+                "recoverable": False,
+            })
+        except Exception:
+            pass
     finally:
-        shutil.rmtree(job_temp, ignore_errors=True)
-        log.debug("Cleaned up temp dir: %s", job_temp)
+        _cleanup_job_temp(job_temp, succeeded=succeeded)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
