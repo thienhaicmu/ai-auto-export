@@ -17,7 +17,7 @@ Quality modes (from timeline.quality_mode):
 
 ASS path escaping (Windows + FFmpeg libass):
   - Backslashes -> forward slashes
-  - Drive-letter colon escaped: C:/ -> C\:/
+  - Drive-letter colon escaped: C:/ -> C\\:/
 """
 from __future__ import annotations
 

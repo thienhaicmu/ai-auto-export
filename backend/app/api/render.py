@@ -1,11 +1,13 @@
 """
-Render API — POST /api/render/start triggers the Phase 1.5 pipeline:
-  mock LLM (research/scripts) + real Playwright frame capture + real FFmpeg encode.
+Render API — POST /api/render/start triggers the pipeline:
+  LLM scene generation (Gemini or mock fallback)
+  + real Playwright frame capture
+  + real FFmpeg encode.
 
 WS event order (ARCHITECTURE.md §8):
-  job.started → language.detected → research.completed → scripts.generated
-  → scenes.generated → voice.generated → html.capture.progress (×N)
-  → render.progress (×N) → video.ready → job.completed
+  job.started -> language.detected -> research.completed -> scripts.generated
+  -> scenes.generated -> voice.generated -> html.capture.progress (xN)
+  -> render.progress (xN) -> video.ready -> job.completed
 """
 from __future__ import annotations
 
@@ -16,7 +18,7 @@ import time
 import uuid
 import wave
 from pathlib import Path
-from typing import Awaitable, Callable, Literal
+from typing import Literal
 
 from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel
@@ -24,7 +26,8 @@ from pydantic import BaseModel
 from app.services.event_bus import event_bus
 from app.utils.lang import detect_language
 from app.utils.slug import output_filename
-from app.renderer.timeline import fixture_timeline
+from app.providers.llm import get_llm_provider
+from app.agents.scene_agent import generate_scene_timeline
 from app.renderer.subtitle import generate_ass_subtitles
 from app.renderer.html_renderer import render_html_scenes
 from app.renderer.ffmpeg_encoder import encode
@@ -69,7 +72,6 @@ def _generate_silent_wav(path: Path, duration_seconds: float, sample_rate: int =
         wf.setnchannels(2)
         wf.setsampwidth(2)
         wf.setframerate(sample_rate)
-        # 2 channels × 2 bytes/sample = 4 bytes per frame, all zero (silence)
         wf.writeframes(b"\x00" * n_samples * 4)
 
 
@@ -77,13 +79,11 @@ def _generate_silent_wav(path: Path, duration_seconds: float, sample_rate: int =
 
 async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
     """
-    Phase 1.5 pipeline:
-      - Mock AI (research, scripts) — no real LLM calls yet
-      - Fixture timeline (5 scenes, viral template)
-      - Silent voice placeholder (edge-tts wired in Phase 2)
-      - ASS subtitle from scene text
+    Phase 2B pipeline:
+      - Language detection (heuristic)
+      - LLM scene generation via Gemini (falls back to mock on error)
       - Playwright HTML frame capture
-      - FFmpeg encode per-scene + concat + audio mix + subtitle burn
+      - FFmpeg encode with quality mode
     """
     variant_id = "v01"
     job_temp = _TEMP_ROOT / job_id
@@ -108,28 +108,18 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "quality_mode": req.quality_mode,
         })
 
-        # 2. Language detection (heuristic — real LLM in Phase 2)
+        # 2. Language detection (heuristic — LLM-backed in Phase 3)
         language = detect_language(req.keyword)
-        await asyncio.sleep(0.3)
-        await emit("language.detected", {"language": language, "confidence": 0.95})
+        await emit("language.detected", {"language": language, "confidence": 0.9})
 
-        # 3. Research (mock)
-        await asyncio.sleep(0.4)
+        # 3. Research context (quick emit — LLM research baked into scene prompt)
+        await asyncio.sleep(0.15)
         await emit("research.completed", {
-            "summary": f"Research complete for '{req.keyword}'",
+            "summary": f"Analyzing '{req.keyword}' for viral content angles",
             "angles": ["controversy", "timeline", "viral hook"],
         })
 
-        # 4. Script generation (mock)
-        await asyncio.sleep(0.3)
-        hook = f"{req.keyword.upper()} — the truth they don't want you to know"
-        await emit("scripts.generated", {
-            "variant_id": variant_id,
-            "word_count": 120,
-            "hook": hook,
-        })
-
-        # 5. Build fixture timeline
+        # 4. Build output path before LLM call so it's available for fallback
         output_folder = req.output_folder or str(_BACKEND_DIR / "output")
         final_output_path = output_filename(
             keyword=req.keyword,
@@ -137,19 +127,42 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             index=1,
             output_dir=output_folder,
         )
-        timeline = fixture_timeline(
+
+        # 5. LLM scene generation (Gemini or mock; fixture fallback on error)
+        provider = get_llm_provider()
+        log.info(
+            "Generating scenes for job %s via provider=%s quality=%s",
+            job_id, type(provider).__name__, req.quality_mode,
+        )
+        timeline = await generate_scene_timeline(
             job_id=job_id,
             keyword=req.keyword,
-            output_path=str(final_output_path),
+            language=language,
             duration_seconds=req.duration_seconds,
+            output_path=str(final_output_path),
+            chosen_idea=None,   # Phase 2B: idea lookup not yet implemented
+            provider=provider,
             quality_mode=req.quality_mode,
         )
+
+        # Emit scripts.generated using scene 0 headline as the hook
+        hook = timeline.scenes[0].props.headline if timeline.scenes else req.keyword.upper()
+        word_count = sum(
+            len(s.props.headline.split()) + len(s.props.subhead.split())
+            for s in timeline.scenes
+        )
+        await emit("scripts.generated", {
+            "variant_id": variant_id,
+            "word_count": word_count,
+            "hook": hook,
+        })
+
         await emit("scenes.generated", {
             "variant_id": variant_id,
             "scene_count": len(timeline.scenes),
         })
 
-        # 6. Generate silent voice placeholder
+        # 6. Generate silent voice placeholder (edge-tts wired in Phase 3)
         voice_path = job_temp / "voice.wav"
         _generate_silent_wav(voice_path, req.duration_seconds)
         timeline.audio.voice_track = str(voice_path)
@@ -199,7 +212,6 @@ async def _run_pipeline(job_id: str, req: RenderRequest) -> None:
             "variant_id": variant_id,
         })
     finally:
-        # Clean up scratch files (frame dirs already removed by encoder)
         shutil.rmtree(job_temp, ignore_errors=True)
         log.debug("Cleaned up temp dir: %s", job_temp)
 
@@ -211,7 +223,10 @@ async def start_render(
     req: RenderRequest, background_tasks: BackgroundTasks
 ) -> RenderResponse:
     job_id = f"job_{uuid.uuid4().hex[:8]}"
-    log.info("Render job %s: keyword='%s' dur=%ds", job_id, req.keyword, req.duration_seconds)
+    log.info(
+        "Render job %s: keyword='%s' dur=%ds quality=%s",
+        job_id, req.keyword, req.duration_seconds, req.quality_mode,
+    )
     background_tasks.add_task(_run_pipeline, job_id, req)
     return RenderResponse(job_id=job_id)
 

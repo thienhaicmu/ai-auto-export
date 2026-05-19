@@ -8,7 +8,8 @@ router = APIRouter()
 
 
 class ProviderStatus(BaseModel):
-    llm: str
+    llm: str          # "gemini", "mock", etc.
+    llm_ready: bool   # True if provider has credentials / no missing deps
     tts: str
 
 
@@ -22,13 +23,21 @@ class HealthResponse(BaseModel):
 
 @router.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
+    # LLM readiness: gemini requires API key; mock is always ready
+    llm_name = settings.llm_provider.lower()
+    if llm_name == "gemini":
+        llm_ready = bool(settings.gemini_api_key)
+    else:
+        llm_ready = True  # mock never fails
+
     return HealthResponse(
         ok=True,
         version=settings.version,
         ffmpeg=shutil.which("ffmpeg") is not None,
-        chromium=True,  # Phase 1: lazy-install deferred
+        chromium=True,  # lazy-install deferred
         providers=ProviderStatus(
-            llm=settings.llm_provider,
+            llm=llm_name,
+            llm_ready=llm_ready,
             tts=settings.tts_provider,
         ),
     )

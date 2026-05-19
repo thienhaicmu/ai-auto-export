@@ -10,8 +10,12 @@ class Settings(BaseSettings):
     version: str = "0.1.0"
 
     # Provider selection
-    llm_provider: str = "mock"
+    llm_provider: str = "gemini"
     tts_provider: str = "mock"
+
+    # Gemini config (only used when llm_provider=gemini)
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.0-flash"
 
     # Render limits
     max_concurrent_variants: int = 2
