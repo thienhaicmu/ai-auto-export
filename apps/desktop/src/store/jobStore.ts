@@ -47,7 +47,13 @@ export function applyEventToJob(job: JobSnapshot, event: WsEvent): JobSnapshot {
       }
     }
 
+    case 'assets.selected':
+      return { ...job, events }
+
     case 'voice.generated':
+      return { ...job, events }
+
+    case 'audio.timeline.generated':
       return { ...job, events }
 
     case 'html.capture.progress': {
@@ -71,6 +77,9 @@ export function applyEventToJob(job: JobSnapshot, event: WsEvent): JobSnapshot {
         variants: upsertVariant(job.variants, vid, (v) => ({ ...v, progress: pct })),
       }
     }
+
+    case 'audio.mixed':
+      return { ...job, events }
 
     case 'video.ready': {
       const vid = event.data.variant_id as string

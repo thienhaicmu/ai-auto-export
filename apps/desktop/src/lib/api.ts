@@ -41,6 +41,7 @@ export interface RenderRequest {
   output_count: number
   styles: string[]
   output_folder: string
+  quality_mode: 'preview' | 'final'
   chosen_idea_id?: string
 }
 

@@ -1,13 +1,16 @@
-// WS event types — mirrors ARCHITECTURE.md §8
+// WS event types — mirrors ARCHITECTURE.md §8 + Phase 4A audio events
 export type WsEventType =
   | 'job.started'
   | 'language.detected'
   | 'research.completed'
   | 'scripts.generated'
   | 'scenes.generated'
+  | 'assets.selected'
   | 'voice.generated'
+  | 'audio.timeline.generated'
   | 'html.capture.progress'
   | 'render.progress'
+  | 'audio.mixed'
   | 'video.ready'
   | 'job.completed'
   | 'job.error'

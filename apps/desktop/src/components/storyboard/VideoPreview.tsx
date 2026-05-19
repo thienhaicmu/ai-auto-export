@@ -1,29 +1,50 @@
 import { useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, ExternalLink, Film } from 'lucide-react'
+import { ExternalLink, Film } from 'lucide-react'
 import { usePreviewStore } from '../../store/previewStore'
 import { useJobStore } from '../../store/jobStore'
+import { useSetupStore } from '../../store/setupStore'
 
+// Convert Windows/Unix absolute path to file:// URL
 function toFileUrl(filePath: string): string {
   const fwd = filePath.replace(/\\/g, '/')
-  // Windows absolute path: D:/... → file:///D:/...
   if (/^[A-Za-z]:/.test(fwd)) return `file:///${fwd}`
-  // Unix absolute path: /... → file:///...
   return `file://${fwd}`
+}
+
+// Map format string to CSS aspect-ratio value
+function formatToAspectRatio(format: string): string {
+  const map: Record<string, string> = {
+    '9:16': '9/16',
+    '16:9': '16/9',
+    '1:1':  '1/1',
+    '3:4':  '3/4',
+  }
+  return map[format] ?? '9/16'
+}
+
+// Platform-aware label for the reveal action
+function revealLabel(): string {
+  const platform = window.api?.platform ?? 'linux'
+  if (platform === 'darwin') return 'Reveal in Finder'
+  if (platform === 'win32')  return 'Reveal in Explorer'
+  return 'Reveal File'
 }
 
 export function VideoPreview() {
   const selectedId = usePreviewStore((s) => s.selectedVariantId)
   const setCurrentTime = usePreviewStore((s) => s.setCurrentTime)
+  const selectVariant = usePreviewStore((s) => s.selectVariant)
   const job = useJobStore((s) => s.job)
+  const format = useSetupStore((s) => s.format)
 
   const variant = job?.variants.find((v) => v.variant_id === selectedId)
   const outputPath = variant?.outputPath ?? null
 
   const videoRef = useRef<HTMLVideoElement>(null)
+  const aspectRatio = formatToAspectRatio(format)
 
   // Auto-select first completed variant
-  const selectVariant = usePreviewStore((s) => s.selectVariant)
   useEffect(() => {
     if (!selectedId && job) {
       const done = job.variants.find((v) => v.status === 'done')
@@ -57,10 +78,15 @@ export function VideoPreview() {
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               className="relative flex flex-col items-center gap-3 w-full"
             >
-              {/* 9:16 video container */}
+              {/* Video container — aspect ratio follows selected format */}
               <div
                 className="relative rounded-xl overflow-hidden border border-subtle bg-black shadow-2xl"
-                style={{ aspectRatio: '9/16', maxHeight: 'calc(100vh - 220px)', width: 'auto' }}
+                style={{
+                  aspectRatio,
+                  maxHeight: 'calc(100vh - 220px)',
+                  width: 'auto',
+                  maxWidth: '100%',
+                }}
               >
                 <video
                   ref={videoRef}
@@ -70,8 +96,6 @@ export function VideoPreview() {
                   onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
                   aria-label="Video preview"
                 >
-                  {/* Normalize path for file:// protocol:
-                      Windows D:\path\file.mp4 → file:///D:/path/file.mp4 */}
                   <source src={toFileUrl(outputPath)} type="video/mp4" />
                 </video>
               </div>
@@ -83,7 +107,14 @@ export function VideoPreview() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-elevated border border-subtle rounded-lg text-xs text-secondary hover:text-primary hover:border-accent/50 transition-all"
                 >
                   <ExternalLink size={12} />
-                  Reveal in Finder
+                  {revealLabel()}
+                </button>
+                <button
+                  onClick={() => window.api.openFile(outputPath)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-elevated border border-subtle rounded-lg text-xs text-secondary hover:text-primary hover:border-accent/50 transition-all"
+                >
+                  <Film size={12} />
+                  Open in Player
                 </button>
               </div>
             </motion.div>
@@ -94,14 +125,18 @@ export function VideoPreview() {
               animate={{ opacity: 1 }}
               className="flex flex-col items-center gap-4 text-muted"
             >
-              {/* 9:16 placeholder */}
+              {/* Placeholder with correct aspect ratio */}
               <div
                 className="relative flex items-center justify-center rounded-xl border-2 border-dashed border-subtle bg-elevated/30"
-                style={{ aspectRatio: '9/16', maxHeight: 'calc(100vh - 240px)', width: '200px' }}
+                style={{
+                  aspectRatio,
+                  maxHeight: 'calc(100vh - 240px)',
+                  width: format === '16:9' ? '260px' : '160px',
+                }}
               >
                 <div className="flex flex-col items-center gap-2">
                   <Film size={28} className="opacity-20" />
-                  <span className="text-xs opacity-40">9:16</span>
+                  <span className="text-xs opacity-40">{format}</span>
                 </div>
               </div>
               <p className="text-xs text-center max-w-[180px]">

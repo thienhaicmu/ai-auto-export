@@ -1,8 +1,10 @@
 import { useSetupStore } from '../../store/setupStore'
 import { KeywordInput } from './KeywordInput'
+import { IdeaCards } from './IdeaCards'
 import { StyleChips } from './StyleChips'
 import { OutputFolderPicker } from './OutputFolderPicker'
 import { GenerateButton } from './GenerateButton'
+import type { QualityMode } from '../../store/setupStore'
 
 // Format options
 const FORMATS = [
@@ -14,6 +16,12 @@ const FORMATS = [
 // Duration presets in seconds
 const DURATIONS = [15, 30, 60, 90] as const
 
+// Quality mode options
+const QUALITY_OPTS: { id: QualityMode; label: string; desc: string }[] = [
+  { id: 'preview', label: 'Preview', desc: '480p · fast' },
+  { id: 'final',   label: 'Final',   desc: '1080p · HQ'  },
+]
+
 export function LeftSetupPanel() {
   const format = useSetupStore((s) => s.format)
   const setFormat = useSetupStore((s) => s.setFormat)
@@ -21,6 +29,8 @@ export function LeftSetupPanel() {
   const setDuration = useSetupStore((s) => s.setDuration)
   const outputCount = useSetupStore((s) => s.outputCount)
   const setOutputCount = useSetupStore((s) => s.setOutputCount)
+  const qualityMode = useSetupStore((s) => s.qualityMode)
+  const setQualityMode = useSetupStore((s) => s.setQualityMode)
 
   return (
     <div className="flex flex-col h-full">
@@ -36,6 +46,9 @@ export function LeftSetupPanel() {
 
         {/* Keyword */}
         <KeywordInput />
+
+        {/* Idea cards — auto-generate after keyword is entered */}
+        <IdeaCards />
 
         {/* Format picker */}
         <div className="flex flex-col gap-2">
@@ -118,6 +131,30 @@ export function LeftSetupPanel() {
 
         {/* Style chips */}
         <StyleChips />
+
+        {/* Quality mode */}
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-semibold text-muted uppercase tracking-wider">
+            Quality
+          </label>
+          <div className="flex gap-1.5">
+            {QUALITY_OPTS.map(({ id, label, desc }) => (
+              <button
+                key={id}
+                onClick={() => setQualityMode(id)}
+                className={[
+                  'flex-1 flex flex-col items-center py-2 rounded-lg border text-xs font-medium transition-all',
+                  qualityMode === id
+                    ? 'bg-accent/10 border-accent text-accent'
+                    : 'bg-elevated border-subtle text-muted hover:border-accent/40 hover:text-secondary',
+                ].join(' ')}
+              >
+                <span className="font-bold">{label}</span>
+                <span className="text-2xs opacity-70 mt-0.5">{desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Output folder */}
         <OutputFolderPicker />
