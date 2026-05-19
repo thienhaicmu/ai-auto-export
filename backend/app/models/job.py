@@ -40,10 +40,29 @@ class Scene(BaseModel):
     props: SceneProps
 
 
+class AudioDirection(BaseModel):
+    """
+    Cinematic audio direction data attached to an AudioConfig.
+
+    All fields are optional with safe defaults so that existing timelines
+    that lack this object continue to render without change.
+    """
+    bpm: int = 128
+    beat_markers: list[float] = Field(default_factory=list)  # seconds from video start
+    intro_hit: Optional[float] = None    # time of first strong beat (seconds)
+    transition_hits: list[float] = Field(default_factory=list)  # scene-boundary beats
+    outro_hit: Optional[float] = None   # last strong beat before end
+    fade_in_ms: int = 500               # music fade-in duration
+    fade_out_ms: int = 1000             # music fade-out duration
+    duck_voice: bool = True             # duck music when voice is present
+    scene_energy: list[int] = Field(default_factory=list)   # per-scene energy 1–5
+
+
 class AudioConfig(BaseModel):
     voice_track: Optional[str] = None
     music_bed: Optional[str] = None
     music_gain_db: float = -22.0
+    direction: Optional[AudioDirection] = None   # Phase 4A; None = legacy behaviour
 
 
 class SubtitleConfig(BaseModel):

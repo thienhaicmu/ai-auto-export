@@ -58,7 +58,10 @@
       "Read(//d/d/ai-auto-export/backend/.venv/**)",
       "Bash(.venv/Scripts/python.exe -m pip install pytest pytest-asyncio httpx --quiet)",
       "Bash(.venv/Scripts/python.exe -m pytest tests/test_template_contract.py tests/test_output_validator.py tests/test_timeline.py tests/test_slug.py -v --tb=short)",
-      "Bash(.venv/Scripts/python.exe -m pytest tests/test_health.py::test_health_returns_200 tests/test_health.py::test_ideas_generate -v --tb=short)"
+      "Bash(.venv/Scripts/python.exe -m pytest tests/test_health.py::test_health_returns_200 tests/test_health.py::test_ideas_generate -v --tb=short)",
+      "Bash(Get-ChildItem -Path \"d:\\\\ai-auto-export\\\\backend\\\\app\\\\renderer\\\\\" -File | Select-Object -ExpandProperty Name)",
+      "Bash(Get-ChildItem -Path \"d:\\\\ai-auto-export\\\\assets\" -Recurse -File)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   }
 }
