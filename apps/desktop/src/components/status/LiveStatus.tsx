@@ -3,6 +3,8 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useJobStore } from '../../store/jobStore'
 import type { WsEvent } from '../../lib/types'
 
+const EMPTY_EVENTS: WsEvent[] = []
+
 const EVENT_COLORS: Partial<Record<string, string>> = {
   'job.started':              'text-secondary',
   'language.detected':        'text-secondary',
@@ -59,7 +61,7 @@ function formatEvent(e: WsEvent): string {
 
 export function LiveStatus() {
   const [collapsed, setCollapsed] = useState(false)
-  const events = useJobStore((s) => s.job?.events ?? [])
+  const events = useJobStore((s) => s.job?.events ?? EMPTY_EVENTS)
   const jobStatus = useJobStore((s) => s.job?.status ?? null)
   const logRef = useRef<HTMLDivElement>(null)
 

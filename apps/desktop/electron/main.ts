@@ -19,7 +19,7 @@ function createWindow(): void {
     frame: false,
     titleBarStyle: 'hidden',
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
