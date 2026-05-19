@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Viral template — Phase 3A: Premium Motion System
+   Viral template — Phase 5A: Cinematic Polish Engine
    RULES: CSS @keyframes only. No setTimeout / setInterval.
    All dimensions in vw/vh — scales at both 480×854 (preview) and 1080×1920 (final).
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -15,20 +15,26 @@
 :root {
   /* Easing curves */
   --ease-out:  cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-back: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --ease-back: cubic-bezier(0.34, 1.52, 0.64, 1);   /* slight overshoot */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);       /* gentler settle */
 
-  /* Durations */
+  /* Durations — overridden per-scene by scene.js based on motion_intensity */
   --dur-xs: 0.28s;
   --dur-sm: 0.42s;
   --dur-md: 0.65s;
   --dur-lg: 0.92s;
+
+  /* Beat-sync offsets — set by scene.js from audio direction */
+  --beat-delay:    0.05s;   /* delay before label + first word */
+  --divider-delay: 0.55s;   /* after last word settles */
+  --subhead-delay: 0.72s;   /* after divider starts */
 
   /* Color — overridden by scene.js from role + props */
   --accent:      #7C5CFF;
   --accent-glow: rgba(124, 92, 255, 0.45);
   --accent-dim:  rgba(124, 92, 255, 0.15);
   --text-hero:   #FFFFFF;
-  --text-sub:    rgba(255, 255, 255, 0.80);
+  --text-sub:    rgba(255, 255, 255, 0.82);
   --bg-base:     #06060E;
 
   /* Depth / glow */
@@ -40,7 +46,7 @@
   --safe-top:    12vh;
   --safe-bottom: 24vh;
 
-  /* Headline size — set by scene.js (word-count + seed variation) */
+  /* Headline size — set by scene.js (word-count + energy + seed variation) */
   --headline-size: 12vw;
 
   /* Scene duration — set by scene.js */
@@ -49,11 +55,11 @@
 
 /* ── Role colour fallbacks (scene.js inline vars take priority) ─────────── */
 
-[data-role="hook"]       { --accent: #FF3D2E; --accent-glow: rgba(255,61,46,0.45);  --accent-dim: rgba(255,61,46,0.15);  }
+[data-role="hook"]       { --accent: #FF3D2E; --accent-glow: rgba(255,61,46,0.50);  --accent-dim: rgba(255,61,46,0.18);  }
 [data-role="context"]    { --accent: #00C2E0; --accent-glow: rgba(0,194,224,0.45);  --accent-dim: rgba(0,194,224,0.15);  }
-[data-role="escalation"] { --accent: #FF8C00; --accent-glow: rgba(255,140,0,0.45);  --accent-dim: rgba(255,140,0,0.15);  }
-[data-role="twist"]      { --accent: #FFD700; --accent-glow: rgba(255,215,0,0.45);  --accent-dim: rgba(255,215,0,0.15);  }
-[data-role="payoff"]     { --accent: #06D6A0; --accent-glow: rgba(6,214,160,0.45);  --accent-dim: rgba(6,214,160,0.15);  }
+[data-role="escalation"] { --accent: #FF8C00; --accent-glow: rgba(255,140,0,0.50);  --accent-dim: rgba(255,140,0,0.18);  }
+[data-role="twist"]      { --accent: #FFD700; --accent-glow: rgba(255,215,0,0.50);  --accent-dim: rgba(255,215,0,0.18);  }
+[data-role="payoff"]     { --accent: #06D6A0; --accent-glow: rgba(6,214,160,0.50);  --accent-dim: rgba(6,214,160,0.18);  }
 
 /* ── Base ───────────────────────────────────────────────────────────────────── */
 
@@ -79,37 +85,35 @@ html, body {
   inset: 0;
   background-size: cover;
   background-position: center;
-  /* Combined: fade-in opacity + slow Ken Burns zoom over full scene duration */
   animation: bgReveal var(--scene-duration) var(--ease-out) both;
   will-change: transform, opacity;
 }
 
-/* Base overlay — very light when no image (halo provides the colour) */
+/* Base overlay — very light when no image */
 #bg::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(6, 6, 14, 0.08) 0%,
-    rgba(6, 6, 14, 0.14) 100%
+    rgba(6, 6, 14, 0.06) 0%,
+    rgba(6, 6, 14, 0.12) 100%
   );
 }
 
-/* ── Background image: blur + strong dark gradient ──────────────────────────── */
+/* ── Background image: blur + deeper gradient ────────────────────────────────── */
 
 .has-bg #bg {
-  filter: blur(var(--blur-bg)) saturate(0.82);
-  /* scale(1.08) in bgReveal compensates for blur-edge bleed */
+  filter: blur(var(--blur-bg)) saturate(0.78);
 }
 
 .has-bg #bg::after {
   background: linear-gradient(
     180deg,
-    rgba(6, 6, 14, 0.18) 0%,
-    rgba(6, 6, 14, 0.52) 38%,
-    rgba(6, 6, 14, 0.88) 70%,
-    rgba(6, 6, 14, 0.97) 100%
+    rgba(6, 6, 14, 0.22) 0%,
+    rgba(6, 6, 14, 0.55) 36%,
+    rgba(6, 6, 14, 0.90) 68%,
+    rgba(6, 6, 14, 0.98) 100%
   );
 }
 
@@ -122,10 +126,12 @@ html, body {
     radial-gradient(ellipse 72% 36% at var(--halo-x) 5%, var(--accent-glow) 0%, transparent 68%),
     radial-gradient(ellipse 88% 48% at 50% 102%,  rgba(6, 6, 14, 0.72) 0%, transparent 65%);
   pointer-events: none;
-  animation: layerFadeIn var(--dur-lg) 0.15s ease both;
+  animation:
+    layerFadeIn var(--dur-lg) 0.12s ease both,
+    haloShift   7.0s          2.0s  ease-in-out infinite;
 }
 
-/* ── Inner glow — role-coloured mid-frame depth layer ───────────────────────── */
+/* ── Inner glow — role-coloured depth layer ─────────────────────────────────── */
 
 #inner-glow {
   position: absolute;
@@ -136,11 +142,35 @@ html, body {
   animation: layerFadeIn var(--dur-lg) 0.75s ease forwards;
 }
 
-/* Stronger breathing glow on gradient-only (no-image) scenes */
+/* Gradient-only scenes: stronger breathing glow */
 html:not(.has-bg) #inner-glow {
   background: radial-gradient(ellipse 65% 36% at 50% 68%, var(--accent-glow) 0%, transparent 56%);
-  animation: layerFadeIn var(--dur-lg) 0.75s ease forwards,
-             glowBreathe 5.5s 2.2s ease-in-out infinite;
+  animation:
+    layerFadeIn var(--dur-lg)  0.75s ease forwards,
+    glowBreathe 5.5s           2.2s  ease-in-out infinite;
+}
+
+/* Payoff — celebratory radial pulse */
+[data-role="payoff"] #inner-glow {
+  background: radial-gradient(ellipse 70% 40% at 50% 72%, var(--accent-glow) 0%, transparent 58%);
+  animation:
+    layerFadeIn var(--dur-md)  0.3s ease forwards,
+    payoffPulse 3.5s           1.5s ease-in-out infinite;
+}
+
+/* Hook — extra-strong glow burst on entry */
+[data-role="hook"] #inner-glow {
+  background: radial-gradient(ellipse 75% 38% at 50% 62%, var(--accent-glow) 0%, transparent 55%);
+  animation:
+    hookGlowBurst var(--dur-md) 0.0s var(--ease-back) forwards,
+    glowBreathe   4.8s          1.2s ease-in-out infinite;
+}
+
+/* Escalation — tense pulsing */
+[data-role="escalation"] #inner-glow {
+  animation:
+    layerFadeIn var(--dur-md) 0.4s ease forwards,
+    glowBreathe 3.2s          1.0s ease-in-out infinite;
 }
 
 /* ── Vignette — cinematic edge darkening ─────────────────────────────────────── */
@@ -150,10 +180,20 @@ html:not(.has-bg) #inner-glow {
   inset: 0;
   background: radial-gradient(
     ellipse 88% 88% at 50% 50%,
-    transparent 46%,
-    rgba(4, 4, 10, 0.84) 100%
+    transparent 44%,
+    rgba(4, 4, 10, 0.88) 100%
   );
   pointer-events: none;
+}
+
+/* Stronger vignette for hook/escalation */
+[data-role="hook"] #vignette,
+[data-role="escalation"] #vignette {
+  background: radial-gradient(
+    ellipse 82% 82% at 50% 50%,
+    transparent 38%,
+    rgba(4, 4, 10, 0.94) 100%
+  );
 }
 
 /* ── Film grain ──────────────────────────────────────────────────────────────── */
@@ -161,7 +201,7 @@ html:not(.has-bg) #inner-glow {
 #noise {
   position: absolute;
   inset: 0;
-  opacity: 0.030;
+  opacity: 0.028;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size: 128px;
   pointer-events: none;
@@ -187,92 +227,149 @@ html:not(.has-bg) #inner-glow {
   justify-content: flex-end;
 }
 
-/* ── Role label ──────────────────────────────────────────────────────────────── */
+/* ── Role label — pill chip ──────────────────────────────────────────────────── */
 
 #label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 1.6vw;
-  font-size: clamp(9px, 2vw, 24px);
-  font-weight: 700;
-  letter-spacing: 0.42em;
+  gap: 1.4vw;
+  font-size: clamp(8px, 1.7vw, 20px);
+  font-weight: 800;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: #FFFFFF;
+  background: var(--accent);
+  padding: 0.9vw 2.4vw 0.9vw 1.6vw;
+  border-radius: 99vw;
   opacity: 0;
-  margin-bottom: 3.2vw;
-  animation: labelReveal var(--dur-sm) 0.10s var(--ease-out) forwards;
+  margin-bottom: 4.5vw;
+  align-self: center;
+  box-shadow:
+    0 0   3vw var(--accent-glow),
+    0 0.3vw 1.2vw rgba(0, 0, 0, 0.55);
+  animation: labelReveal var(--dur-sm) var(--beat-delay, 0.05s) var(--ease-back) forwards;
+  will-change: opacity, transform;
 }
 
-/* Live dot indicator */
+/* White dot inside pill */
 #label::before {
   content: '';
   flex-shrink: 0;
-  display: block;
-  width: clamp(6px, 1.3vw, 14px);
-  height: clamp(6px, 1.3vw, 14px);
+  width: clamp(5px, 1.1vw, 12px);
+  height: clamp(5px, 1.1vw, 12px);
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 1.4vw var(--accent-glow), 0 0 0.5vw var(--accent);
-  animation: dotPulse 2.0s 1.0s ease-in-out infinite;
+  background: rgba(255, 255, 255, 0.90);
+  box-shadow: 0 0 0.8vw rgba(255, 255, 255, 0.75);
+  animation: dotPulse 1.8s 1.2s ease-in-out infinite;
 }
 
-/* ── Headline wrapper — overflow:hidden clips the slide-up reveal ────────────── */
+/* ── Headline wrapper — clip boundary for word reveals ───────────────────────── */
 
 #headline-wrap {
   overflow: hidden;
-  padding-bottom: 0.9vw;    /* extra room so descenders aren't clipped */
+  padding-bottom: 1.1vw;    /* room for descenders across word wraps */
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
-/* ── Headline ────────────────────────────────────────────────────────────────── */
+/* ── Headline — flex container for word spans ────────────────────────────────── */
 
 #headline {
   font-size: var(--headline-size, 12vw);
   font-weight: 900;
-  line-height: 0.92;
+  line-height: 0.96;
   text-align: center;
-  color: var(--text-hero);
   text-transform: uppercase;
   letter-spacing: -0.03em;
-  /* Start: below clip + slightly scaled up for impact entry */
-  transform: translateY(110%) scale(1.08);
-  animation: headlineReveal var(--dur-md) 0.05s var(--ease-out) forwards;
-  text-shadow:
-    0 0   7vw var(--accent-glow),
-    0 0.4vw 3vw rgba(0, 0, 0, 0.95),
-    0 0   0.6vw rgba(255, 255, 255, 0.05);
-  word-break: break-word;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0 0.22em;
+  /* No transform/animation here — each .word handles its own reveal */
 }
 
-/* ── Highlighted words ───────────────────────────────────────────────────────── */
+/* ── Per-word clip container ─────────────────────────────────────────────────── */
 
-#headline .hl {
+#headline .word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.12em;   /* descender room */
+  line-height: inherit;
+}
+
+/* ── Animated word ───────────────────────────────────────────────────────────── */
+
+#headline .word {
+  display: inline-block;
+  color: var(--text-hero);
+  transform: translateY(110%) scale(1.05);
+  animation: wordReveal var(--dur-md) var(--word-delay, 0s) var(--ease-out) both;
+  text-shadow:
+    0 0   5vw var(--accent-glow),
+    0 0.35vw 2.5vw rgba(0, 0, 0, 0.95),
+    0 0   0.5vw rgba(255, 255, 255, 0.04);
+  will-change: transform;
+}
+
+/* ── Highlighted word — accent color + emphasis pop ─────────────────────────── */
+
+#headline .word.hl {
   color: var(--accent);
+  animation:
+    wordReveal var(--dur-md) var(--word-delay, 0s) var(--ease-back) both,
+    hlGlowPulse 2.0s calc(var(--word-delay, 0s) + var(--dur-md)) ease-in-out infinite;
+  text-shadow:
+    0 0   4vw var(--accent-glow),
+    0 0.35vw 2.5vw rgba(0, 0, 0, 0.95);
   position: relative;
 }
 
-#headline .hl::after {
+/* Glow underlay behind .hl word */
+#headline .word.hl::after {
   content: '';
   position: absolute;
-  inset: -0.25vw -0.5vw;
+  inset: -0.18em -0.4em;
   background: var(--accent-dim);
-  border-radius: 0.5vw;
+  border-radius: 0.4em;
   z-index: -1;
-  animation: glowPulse 2.2s 1.2s ease-in-out infinite;
+  opacity: 0;
+  animation: hlUnderlay 2.0s calc(var(--word-delay, 0s) + var(--dur-md) + 0.1s) ease-in-out forwards;
+}
+
+/* Hook scenes: impact-style word entry with overshoot */
+[data-role="hook"] #headline .word {
+  animation: wordRevealImpact var(--dur-md) var(--word-delay, 0s) var(--ease-back) both;
+}
+
+[data-role="hook"] #headline .word.hl {
+  animation:
+    wordRevealImpact var(--dur-md) var(--word-delay, 0s) var(--ease-back) both,
+    hlGlowPulse      1.6s          calc(var(--word-delay, 0s) + var(--dur-md)) ease-in-out infinite;
+}
+
+/* Escalation: words slide in from a slight lateral angle */
+[data-role="escalation"] #headline .word {
+  animation: wordRevealEsc var(--dur-md) var(--word-delay, 0s) var(--ease-out) both;
+}
+
+/* Payoff: gentle float-in for a satisfying finish */
+[data-role="payoff"] #headline .word {
+  animation: wordRevealSoft var(--dur-lg) var(--word-delay, 0s) var(--ease-soft) both;
 }
 
 /* ── Divider ─────────────────────────────────────────────────────────────────── */
 
 #divider {
   width: 0;
-  height: 0.18vw;
+  height: 0.20vw;
   min-height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  margin: 3.8vw 0 3.4vw;
+  margin: 3.6vw 0 3.2vw;
   opacity: 0;
-  animation: expandLine var(--dur-md) 0.50s var(--ease-out) forwards;
+  animation: expandLine var(--dur-md) var(--divider-delay, 0.55s) var(--ease-out) forwards;
 }
 
 /* ── Subhead ─────────────────────────────────────────────────────────────────── */
@@ -285,18 +382,34 @@ html:not(.has-bg) #inner-glow {
   letter-spacing: 0.04em;
   opacity: 0;
   line-height: 1.5;
-  max-width: 84%;
-  text-shadow: 0 0.3vw 2vw rgba(0, 0, 0, 0.9);
-  animation: fadeSlideUp var(--dur-sm) 0.64s var(--ease-out) forwards;
+  max-width: 82%;
+  text-shadow: 0 0.3vw 2.2vw rgba(0, 0, 0, 0.92);
+  animation: fadeSlideUp var(--dur-sm) var(--subhead-delay, 0.72s) var(--ease-out) forwards;
 }
 
 /* Lower-third chip treatment when background image is present */
 .has-bg #subhead {
-  padding: 1.8vw 3.8vw;
+  padding: 1.8vw 3.6vw;
   border-radius: 0.8vw;
-  background: rgba(6, 6, 14, 0.65);
+  background: rgba(6, 6, 14, 0.68);
   border-top: 0.22vw solid var(--accent-glow);
-  margin-top: 3.2vw;
+  border-left: 0.12vw solid rgba(255, 255, 255, 0.06);
+  margin-top: 3.0vw;
+  max-width: 90%;
+}
+
+/* Subtitle-emphasis: bolder subhead */
+.subtitle-emphasis #subhead {
+  font-weight: 700;
+  font-size: clamp(13px, 3.8vw, 46px);
+  color: var(--text-hero);
+  letter-spacing: 0.02em;
+}
+
+/* Escalation subhead — tighter chip */
+[data-role="escalation"].has-bg #subhead {
+  background: rgba(6, 6, 14, 0.78);
+  border-top-color: var(--accent);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -309,12 +422,12 @@ html:not(.has-bg) #inner-glow {
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 0.28vw;
+  height: 0.30vw;
   min-height: 3px;
-  background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.55));
+  background: linear-gradient(90deg, var(--accent), rgba(255, 255, 255, 0.60));
   animation: progressGrow var(--scene-duration) linear forwards;
   transform-origin: left;
-  opacity: 0.88;
+  opacity: 0.90;
 }
 
 /* ── Scene badge ─────────────────────────────────────────────────────────────── */
@@ -323,63 +436,115 @@ html:not(.has-bg) #inner-glow {
   position: absolute;
   top: 4.5vw;
   right: 4.5vw;
-  width: clamp(32px, 6.5vw, 72px);
-  height: clamp(32px, 6.5vw, 72px);
+  width: clamp(28px, 6vw, 68px);
+  height: clamp(28px, 6vw, 68px);
   border-radius: 50%;
-  border: 0.22vw solid rgba(255, 255, 255, 0.20);
+  border: 0.22vw solid rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(8px, 2vw, 22px);
+  font-size: clamp(8px, 1.9vw, 22px);
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.50);
   opacity: 0;
-  animation: fadeIn 0.35s 0.9s ease forwards;
+  animation: fadeIn 0.38s 0.9s ease forwards;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Keyframes
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/*
-  Background: opacity 0→1 in first 13% of scene, then Ken Burns zoom 1.08→1.00
-  over the full scene duration. The scale(1.08) start also compensates for
-  blur-edge bleed when filter:blur is applied via .has-bg.
-*/
+/* Background: opacity fade-in then Ken Burns zoom */
 @keyframes bgReveal {
   0%   { opacity: 0; transform: scale(1.08); }
-  13%  { opacity: 1; transform: scale(1.065); }
+  12%  { opacity: 1; transform: scale(1.065); }
   100% { opacity: 1; transform: scale(1.00); }
 }
 
-/* Generic fade-in for halo and inner-glow layers */
+/* Generic fade-in for layered elements */
 @keyframes layerFadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-/* Inner glow subtle breathing on gradient-only scenes (scale only, no opacity) */
+/* Inner glow breathing — slow & organic */
 @keyframes glowBreathe {
-  0%, 100% { transform: scale(1.00); }
-  50%       { transform: scale(1.14); }
+  0%, 100% { transform: scale(1.00); opacity: 0.85; }
+  50%       { transform: scale(1.16); opacity: 1.00; }
 }
 
-/* Label: tracking-expansion + opacity */
+/* Payoff scene glow pulse */
+@keyframes payoffPulse {
+  0%, 100% { opacity: 0.65; transform: scale(1.00); }
+  50%       { opacity: 1.00; transform: scale(1.12); }
+}
+
+/* Hook glow burst on entry */
+@keyframes hookGlowBurst {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1.0); }
+}
+
+/* Halo slow drift — micro-movement for retention */
+@keyframes haloShift {
+  0%   { transform: translateX(0)    scaleX(1.00); opacity: 1.00; }
+  33%  { transform: translateX(1.5%) scaleX(1.04); opacity: 0.92; }
+  66%  { transform: translateX(-1.5%) scaleX(0.97); opacity: 1.00; }
+  100% { transform: translateX(0)    scaleX(1.00); opacity: 1.00; }
+}
+
+/* Label chip: scale + fade from slightly above */
 @keyframes labelReveal {
-  from { opacity: 0; letter-spacing: 0.72em; }
-  to   { opacity: 1; letter-spacing: 0.42em; }
+  from { opacity: 0; transform: translateY(-1.2vw) scale(0.86); }
+  to   { opacity: 1; transform: translateY(0)       scale(1.00); }
 }
 
 /* Live dot: size and glow pulse */
 @keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 1.2vw var(--accent-glow); transform: scale(1.00); }
-  50%       { box-shadow: 0 0 2.5vw var(--accent-glow); transform: scale(1.18); }
+  0%, 100% { box-shadow: 0 0 0.8vw rgba(255,255,255,0.60); transform: scale(1.00); }
+  50%       { box-shadow: 0 0 1.8vw rgba(255,255,255,0.90); transform: scale(1.20); }
 }
 
-/* Headline: slide up from below clip boundary + scale-impact entry */
-@keyframes headlineReveal {
-  0%   { transform: translateY(110%) scale(1.08); }
+/* ── Word reveal keyframes ────────────────────────────────────────────────────── */
+
+/* Default: smooth slide up from clip boundary */
+@keyframes wordReveal {
+  0%   { transform: translateY(110%) scale(1.05); }
   100% { transform: translateY(0)    scale(1.00); }
+}
+
+/* Hook: impact overshoot — word punches past zero then springs back */
+@keyframes wordRevealImpact {
+  0%   { transform: translateY(115%) scale(1.10); }
+  70%  { transform: translateY(-2%)  scale(1.02); }
+  100% { transform: translateY(0)    scale(1.00); }
+}
+
+/* Escalation: lateral + vertical entry */
+@keyframes wordRevealEsc {
+  0%   { transform: translateY(110%) translateX(-3%) scale(1.06); }
+  100% { transform: translateY(0)    translateX(0)   scale(1.00); }
+}
+
+/* Payoff: gentle float-in for satisfying finish */
+@keyframes wordRevealSoft {
+  0%   { transform: translateY(60%) scale(1.02); opacity: 0; }
+  100% { transform: translateY(0)   scale(1.00); opacity: 1; }
+}
+
+/* ── Highlight word animations ───────────────────────────────────────────────── */
+
+/* Glow color pulse on highlighted word during hold */
+@keyframes hlGlowPulse {
+  0%, 100% { text-shadow: 0 0 3vw var(--accent-glow), 0 0.35vw 2.5vw rgba(0,0,0,0.95); }
+  50%       { text-shadow: 0 0 6vw var(--accent-glow), 0 0.35vw 2.5vw rgba(0,0,0,0.95); }
+}
+
+/* Underlay fade-in */
+@keyframes hlUnderlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* Subhead / generic fade + lift */
@@ -391,13 +556,7 @@ html:not(.has-bg) #inner-glow {
 /* Divider line expand from centre */
 @keyframes expandLine {
   from { width: 0;    opacity: 0; }
-  to   { width: 22vw; opacity: 0.70; }
-}
-
-/* Highlighted word background glow pulse (runs during hold phase) */
-@keyframes glowPulse {
-  0%, 100% { opacity: 0.22; }
-  50%       { opacity: 0.70; }
+  to   { width: 24vw; opacity: 0.72; }
 }
 
 /* Generic opacity fade-in */
@@ -406,7 +565,7 @@ html:not(.has-bg) #inner-glow {
   to   { opacity: 1; }
 }
 
-/* Progress bar: grows left→right over full scene duration */
+/* Progress bar: grows left→right */
 @keyframes progressGrow {
   from { width: 0; }
   to   { width: 100%; }
@@ -430,30 +589,30 @@ html:not(.has-bg) #inner-glow {
 
 /* ── Layout modes ────────────────────────────────────────────────────────────── */
 
-/* lower_third: same as has-bg anchor (content to bottom) */
+/* lower_third: content anchored to bottom */
 [data-layout="lower_third"] #content {
   justify-content: flex-end;
 }
 
-/* split: content anchored near 55% height line */
+/* split: content at 55% line */
 [data-layout="split"] #content {
   justify-content: flex-end;
   padding-bottom: 18vh;
 }
 
-/* Horizontal accent rule at the split line */
+/* Accent rule at the split line */
 [data-layout="split"] #content::before {
   content: '';
   position: absolute;
   left: var(--safe-x);
   right: var(--safe-x);
   top: 50%;
-  height: 0.18vw;
+  height: 0.20vw;
   min-height: 2px;
   background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
 }
 
-/* full_bleed: centred with generous internal padding, bigger headline */
+/* full_bleed: centred with more room */
 [data-layout="full_bleed"] #content {
   justify-content: center;
   padding: 8vh 4vw 16vh;
@@ -465,17 +624,17 @@ html:not(.has-bg) #inner-glow {
 
 /* ── Transition styles ───────────────────────────────────────────────────────── */
 
-/* zoom: Ken Burns from scale(1.22) instead of default 1.08 */
+/* zoom: wider Ken Burns start */
 [data-transition="zoom"] #bg {
   animation: bgRevealZoom var(--scene-duration) var(--ease-out) both;
 }
 
-/* flash: white overlay bursts in and fades out quickly */
+/* flash: white overlay bursts in and fades */
 [data-transition="flash"] #flash {
   animation: flashBurst 0.48s ease-out both;
 }
 
-/* glitch: content shakes laterally on entry */
+/* glitch: content lateral shake on entry */
 [data-transition="glitch"] #content {
   animation: glitchEntry 0.30s ease both;
 }
@@ -484,54 +643,46 @@ html:not(.has-bg) #inner-glow {
 
 /* dark_image: heavier blur + stronger dark overlay */
 .has-bg[data-bg-treatment="dark_image"] #bg {
-  filter: blur(5px) brightness(0.50) saturate(0.60);
+  filter: blur(5px) brightness(0.45) saturate(0.58);
 }
 
 .has-bg[data-bg-treatment="dark_image"] #bg::after {
   background: linear-gradient(
     180deg,
-    rgba(6, 6, 14, 0.30) 0%,
-    rgba(6, 6, 14, 0.68) 44%,
-    rgba(6, 6, 14, 0.96) 100%
+    rgba(6, 6, 14, 0.32) 0%,
+    rgba(6, 6, 14, 0.72) 42%,
+    rgba(6, 6, 14, 0.97) 100%
   );
 }
 
-/* abstract: multi-point accent radial on #inner-glow, no image needed */
+/* abstract: multi-point accent radial */
 [data-bg-treatment="abstract"] #inner-glow {
   background:
     radial-gradient(ellipse 52% 26% at 28% 42%, var(--accent-glow) 0%, transparent 65%),
     radial-gradient(ellipse 40% 20% at 74% 62%, var(--accent-dim)  0%, transparent 60%),
     radial-gradient(ellipse 60% 30% at 50% 80%, rgba(6,6,14,0.55)  0%, transparent 70%);
   opacity: 0;
-  animation: layerFadeIn var(--dur-lg) 0.3s ease forwards,
-             abstractPulse 6s 1.8s ease-in-out infinite;
-}
-
-/* ── Subtitle emphasis ───────────────────────────────────────────────────────── */
-
-.subtitle-emphasis #subhead {
-  font-weight: 700;
-  font-size: clamp(13px, 3.8vw, 46px);
-  color: var(--text-hero);
-  letter-spacing: 0.02em;
+  animation:
+    layerFadeIn  var(--dur-lg) 0.3s ease forwards,
+    abstractPulse 6s           1.8s ease-in-out infinite;
 }
 
 /* ── Phase 3B Keyframes ──────────────────────────────────────────────────────── */
 
-/* Wider-zoom Ken Burns for transition_style=zoom */
+/* Wider-zoom Ken Burns */
 @keyframes bgRevealZoom {
   0%   { opacity: 0; transform: scale(1.22); }
-  12%  { opacity: 1; transform: scale(1.18); }
+  11%  { opacity: 1; transform: scale(1.17); }
   100% { opacity: 1; transform: scale(1.00); }
 }
 
-/* Flash: full-white on frame 0, gone by 12% */
+/* Flash: white on frame 0, gone by 12% */
 @keyframes flashBurst {
   0%   { opacity: 1; }
   100% { opacity: 0; }
 }
 
-/* Glitch: lateral shake — 4 rapid hops then settle */
+/* Glitch: lateral hop */
 @keyframes glitchEntry {
   0%   { transform: translateX(0);     }
   18%  { transform: translateX(-3.2%); }
@@ -541,8 +692,8 @@ html:not(.has-bg) #inner-glow {
   100% { transform: translateX(0);     }
 }
 
-/* Abstract background pulse — slow morphing glow */
+/* Abstract background pulse */
 @keyframes abstractPulse {
-  0%, 100% { opacity: 0.85; transform: scale(1.00); }
+  0%, 100% { opacity: 0.82; transform: scale(1.00); }
   50%       { opacity: 1.00; transform: scale(1.10); }
 }

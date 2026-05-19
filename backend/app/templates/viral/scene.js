@@ -1,9 +1,9 @@
 /**
- * Viral template runtime — Phase 4A: Cinematic Audio + Beat Sync
+ * Viral template runtime — Phase 5A: Cinematic Polish Engine
  *
  * Reads window.__SCENE__ props + audio direction, maps role → design tokens,
- * applies visual_direction attributes and CSS vars, populates DOM,
- * then signals window.__SCENE_READY__ = true.
+ * applies visual_direction attributes and CSS vars, populates DOM with
+ * per-word animated spans, then signals window.__SCENE_READY__ = true.
  *
  * CONTRACT (must never break):
  *   - Only CSS Web Animations / @keyframes — NO setTimeout / setInterval
@@ -20,8 +20,6 @@
   var props  = scene.props     || {};
 
   // ── Audio Direction (Phase 4A) ─────────────────────────────────────────────
-  //   Exposed on window.__SCENE__.audio for future template use.
-  //   beat_markers are seconds from video start (absolute, not scene-relative).
 
   var AUDIO = scene.audio || {};
   window.__SCENE_AUDIO__ = {
@@ -43,8 +41,9 @@
   var HIGHLIGHT_IDX   = props.highlight_word_indices     || [];
   var SCENE_IDX       = scene.index != null ? scene.index : 0;
   var SCENE_DURATION  = ((scene.end || 0) - (scene.start || 0)) || 6;
+  var SCENE_START     = scene.start || 0;
 
-  // ── Visual Direction (Phase 3B) ────────────────────────────────────────────
+  // ── Visual Direction ───────────────────────────────────────────────────────
 
   var VD = props.visual_direction || {};
   var VD_ENERGY     = Math.max(1, Math.min(5, parseInt(VD.energy_level, 10) || 3));
@@ -81,27 +80,59 @@
 
   var rgb = hexToRgb(ACCENT);
 
-  // ── Motion scale — VD_MOTION controls animation speed multiplier ───────────
+  // ── Motion scale ──────────────────────────────────────────────────────────
   //
   //   calm=slow (1.4×), medium=normal (1.0×), high=fast (0.55×), impact=instant (0.22×)
-  //   cut transition overrides to near-instant regardless of motion_intensity.
+  //   Cut transition overrides to near-instant regardless of motion_intensity.
 
   var MOTION_SCALE = { calm: 1.4, medium: 1.0, high: 0.55, impact: 0.22 };
   var motionFactor = MOTION_SCALE[VD_MOTION] || 1.0;
   if (VD_TRANSITION === 'cut') motionFactor = Math.min(motionFactor, 0.08);
 
   // ── Energy → glow alpha / dim alpha ──────────────────────────────────────
-  //
-  //   Energy 1 → subtle; Energy 5 → intense. Applied as CSS vars.
 
-  var glowAlpha = 0.22 + (VD_ENERGY / 5) * 0.38;   // 0.30 – 0.60
-  var dimAlpha  = 0.08 + (VD_ENERGY / 5) * 0.16;   // 0.10 – 0.24
+  var glowAlpha = 0.25 + (VD_ENERGY / 5) * 0.38;   // 0.33 – 0.63
+  var dimAlpha  = 0.10 + (VD_ENERGY / 5) * 0.18;   // 0.12 – 0.28
+
+  // ── Beat-sync delay ───────────────────────────────────────────────────────
+  //
+  //   intro_hit is an absolute timestamp (seconds from video start).
+  //   We compute the beat position relative to this scene's start.
+  //   If the beat falls in the first 40% of the scene, delay all reveal
+  //   animations to land the label chip on the beat.
+  //   Clamp to 0 if no data or beat is out of useful range.
+
+  var beatDelay = 0.05;   // default: very short delay, not zero
+  var introHit  = window.__SCENE_AUDIO__.intro_hit;
+  if (introHit !== null && introHit !== undefined) {
+    var relBeat = introHit - SCENE_START;
+    if (relBeat > 0.02 && relBeat < SCENE_DURATION * 0.38) {
+      beatDelay = relBeat;
+    }
+  }
+
+  // ── Stagger timing ────────────────────────────────────────────────────────
+  //
+  //   WORD_STAGGER: gap between consecutive word reveals (seconds).
+  //   At motionFactor=1.0, each word is 80ms after the previous.
+  //   At motionFactor=0.22 (impact), all words appear almost simultaneously (18ms apart).
+
+  var WORD_STAGGER = 0.08;   // seconds between words at 1× speed
+  var word0Delay   = beatDelay;
+  var words        = HEADLINE.trim().split(/\s+/);
+  var wordCount    = words.length;
+
+  // Time when the last word's animation starts
+  var lastWordStart = word0Delay + (wordCount - 1) * WORD_STAGGER * motionFactor;
+  // Divider appears after the last word settles
+  var dividerDelay  = lastWordStart + 0.28 * motionFactor;
+  // Subhead follows divider
+  var subheadDelay  = dividerDelay  + 0.20 * motionFactor;
 
   // ── Headline energy boost ─────────────────────────────────────────────────
-  //   full_bleed gets a larger multiplier by default (1.15× base)
 
-  var baseBoost     = VD_LAYOUT === 'full_bleed' ? 1.15 : 1.0;
-  var energyBoost   = baseBoost * (0.9 + (VD_ENERGY / 5) * 0.2);   // 0.936 – 1.38
+  var baseBoost   = VD_LAYOUT === 'full_bleed' ? 1.15 : 1.0;
+  var energyBoost = baseBoost * (0.90 + (VD_ENERGY / 5) * 0.20);   // 0.936 – 1.38
 
   // ── Apply CSS custom properties ────────────────────────────────────────────
 
@@ -118,7 +149,12 @@
   root.style.setProperty('--dur-md', (0.65 * motionFactor).toFixed(3) + 's');
   root.style.setProperty('--dur-lg', (0.92 * motionFactor).toFixed(3) + 's');
 
-  // Energy headline boost (read by full_bleed + general scaling)
+  // Beat-sync and cascade timing
+  root.style.setProperty('--beat-delay',    beatDelay.toFixed(3)   + 's');
+  root.style.setProperty('--divider-delay', dividerDelay.toFixed(3) + 's');
+  root.style.setProperty('--subhead-delay', subheadDelay.toFixed(3) + 's');
+
+  // Energy headline boost
   root.style.setProperty('--energy-headline-boost', energyBoost.toFixed(3));
 
   // ── Apply data attributes for CSS selectors ────────────────────────────────
@@ -131,18 +167,32 @@
 
   if (VD_SUB_EM) root.classList.add('subtitle-emphasis');
 
-  // ── Headline size — word-count-adaptive + seed micro-variation ─────────────
+  // ── Adaptive headline size ─────────────────────────────────────────────────
+  //
+  //   Breakpoints:
+  //     1 word  → 18.0 vw  (massive, fills frame)
+  //     2 words → 15.0 vw
+  //     3 words → 12.5 vw
+  //     4 words → 10.5 vw
+  //     5 words → 9.0 vw
+  //     6+ words → 8.0 vw  (allows two-line wrapping at safe width)
+  //
+  //   Energy multiplier: energy 5 → +10%, energy 1 → −10%.
+  //   Seed micro-variation: ±0.4 vw to avoid identical frames across scenes.
 
-  var words     = HEADLINE.trim().split(/\s+/);
-  var wordCount = words.length;
-  var baseSize  = wordCount <= 1 ? 16.0
-                : wordCount === 2 ? 13.5
-                : wordCount === 3 ? 11.5
-                :                   10.0;
+  var baseSizeTable = [0, 18.0, 15.0, 12.5, 10.5, 9.0, 8.0];
+  var tableIdx      = Math.min(wordCount, baseSizeTable.length - 1);
+  var baseSize      = baseSizeTable[tableIdx];
 
+  // Energy nudge: ±10% spread over 5 levels
+  var energyNudge = ((VD_ENERGY - 3) / 2) * 0.10;   // −0.10 to +0.10
+  var baseAfterE  = baseSize * (1 + energyNudge);
+
+  // Seed micro-variation (deterministic, not random)
   var seedMod  = ANIMATION_SEED % 100;
-  var sizeVar  = ((seedMod % 10) - 5) * 0.08;            // ±0.4 vw
-  var finalSize = Math.max(8.0, baseSize + sizeVar).toFixed(1);
+  var sizeVar  = ((seedMod % 10) - 5) * 0.08;   // ±0.4 vw
+
+  var finalSize = Math.max(7.5, baseAfterE + sizeVar).toFixed(1);
   root.style.setProperty('--headline-size', finalSize + 'vw');
 
   // ── Seed-based halo position ───────────────────────────────────────────────
@@ -163,10 +213,14 @@
   var labelEl = document.getElementById('label');
   if (labelEl) labelEl.textContent = LABEL_TEXT;
 
-  // ── Headline with word highlights ──────────────────────────────────────────
+  // ── Headline — per-word animated spans ───────────────────────────────────
   //
-  //   Highlighted set: HIGHLIGHT_IDX from props + VD_EMPHASIS (case-insensitive,
-  //   non-alpha stripped) matched against headline words.
+  //   Structure built: .word-wrap > .word[.hl]
+  //
+  //   Each .word-wrap is an inline-block overflow:hidden clip boundary.
+  //   Each .word slides up from 110% with staggered --word-delay.
+  //   Highlighted words (.hl) use ease-back overshoot + glow pulse.
+  //   Emphasis words (from VD.emphasis_words) are also highlighted.
 
   var emphasisSet = {};
   VD_EMPHASIS.forEach(function (ew) {
@@ -177,9 +231,18 @@
   if (headlineEl) {
     headlineEl.innerHTML = words.map(function (word, i) {
       var normalised = word.toLowerCase().replace(/[^a-z0-9]/g, '');
-      var isHl = HIGHLIGHT_IDX.indexOf(i) !== -1 || emphasisSet[normalised];
-      return isHl ? '<span class="hl">' + word + '</span>' : word;
-    }).join(' ');
+      var isHl       = HIGHLIGHT_IDX.indexOf(i) !== -1 || emphasisSet[normalised];
+      var wordClass  = 'word' + (isHl ? ' hl' : '');
+      var delay      = (word0Delay + i * WORD_STAGGER * motionFactor).toFixed(3) + 's';
+
+      // --word-delay is set as inline CSS custom property on the .word span.
+      // This is picked up by the animation-delay in style.css:
+      //   animation: wordReveal var(--dur-md) var(--word-delay, 0s) ...
+      var wordSpan = '<span class="' + wordClass + '" style="--word-delay:' + delay + '">' +
+                       word +
+                     '</span>';
+      return '<span class="word-wrap">' + wordSpan + '</span>';
+    }).join('');
   }
 
   // ── Subhead ────────────────────────────────────────────────────────────────
@@ -206,7 +269,7 @@
       var img      = new Image();
       img.onload   = function () { window.__SCENE_READY__ = true; };
       img.onerror  = function () {
-        root.classList.remove('has-bg');   // revert to centred layout
+        root.classList.remove('has-bg');
         window.__SCENE_READY__ = true;
       };
       img.src = BG_IMAGE;

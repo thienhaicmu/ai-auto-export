@@ -84,7 +84,9 @@
       "Bash(timeout 90 .venv/Scripts/python.exe -m pytest tests/ --tb=short -x)",
       "Bash(timeout 30 .venv/Scripts/python.exe -m pytest tests/test_audio_model.py tests/test_beat_sync.py tests/test_music_selector.py -v)",
       "Bash(.venv/Scripts/python.exe -c ' *)",
-      "Bash(FFMPEG_DIR=/tmp/ffmpeg .venv/Scripts/python.exe -c ' *)"
+      "Bash(FFMPEG_DIR=/tmp/ffmpeg .venv/Scripts/python.exe -c ' *)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/test_template_contract.py tests/test_template_visual.py tests/test_beat_sync.py tests/test_audio_model.py tests/test_music_selector.py tests/test_slug.py tests/test_timeline.py -v)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/test_output_validator.py tests/test_health.py -v)"
     ]
   }
 }
