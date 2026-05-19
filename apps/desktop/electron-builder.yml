@@ -1,6 +1,3 @@
-# electron-builder config for packaging installers.
-# Wired up in Phase 3 (Production Polish). Placeholder for now.
-
 appId: app.ai-keyword-video-factory
 productName: AI Keyword Video Factory
 copyright: Copyright © 2026
@@ -13,11 +10,25 @@ files:
   - out/**/*
   - package.json
 
-# Bundle FFmpeg and the Python sidecar as extra resources at install time.
-# Chromium is NOT bundled — Playwright lazy-installs on first run.
+# Extra resources bundled into the installer and unpacked at:
+#   Windows: %ProgramFiles%\AI Keyword Video Factory\resources\
+#
+# Directory structure inside resources/:
+#   backend/sidecar/         PyInstaller --onedir output (sidecar.exe + DLLs)
+#   ffmpeg/                  ffmpeg.exe + ffprobe.exe
+#   chromium/                Playwright Chromium (chromium-XXXX/chrome-win64/...)
+#   assets/                  Music, fonts, and other shared assets
 extraResources:
-  - from: ../../backend/dist
-    to: backend
+  - from: ../../backend/dist/sidecar
+    to: backend/sidecar
+    filter:
+      - "**/*"
+  - from: ../../build/ffmpeg
+    to: ffmpeg
+    filter:
+      - "**/*"
+  - from: ../../build/chromium
+    to: chromium
     filter:
       - "**/*"
   - from: ../../assets
@@ -26,13 +37,25 @@ extraResources:
       - "**/*"
 
 win:
-  target: nsis
+  target:
+    - target: nsis
+      arch:
+        - x64
   artifactName: ${productName}-${version}-setup.${ext}
+  # Icon must be a 256×256 .ico file at build/icon.ico
+  # icon: build/icon.ico
 
-mac:
-  target: dmg
-  category: public.app-category.video
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+  shortcutName: AI Video Factory
 
-linux:
-  target: AppImage
-  category: AudioVideo
+# macOS / Linux targets left intentionally out of scope for Phase 4C.
+# Uncomment and configure when those platforms are targeted.
+# mac:
+#   target: dmg
+#   category: public.app-category.video
+# linux:
+#   target: AppImage
+#   category: AudioVideo

@@ -1,10 +1,32 @@
+import os
 import shutil
+from pathlib import Path
 from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.config import settings
 
 router = APIRouter()
+
+
+def _ffmpeg_available() -> bool:
+    if settings.ffmpeg_dir:
+        exe = "ffmpeg.exe" if os.name == "nt" else "ffmpeg"
+        if (Path(settings.ffmpeg_dir) / exe).exists():
+            return True
+    return shutil.which("ffmpeg") is not None
+
+
+def _chromium_available() -> bool:
+    browsers_path = os.environ.get("PLAYWRIGHT_BROWSERS_PATH", "")
+    if browsers_path:
+        # Playwright stores chromium under chromium-XXXX/chrome-win64/chrome.exe
+        p = Path(browsers_path)
+        if p.exists():
+            for entry in p.iterdir():
+                if entry.is_dir() and entry.name.startswith("chromium-"):
+                    return True
+    return True  # in dev mode, Playwright manages its own browser path
 
 
 class ProviderStatus(BaseModel):
@@ -33,8 +55,8 @@ async def health() -> HealthResponse:
     return HealthResponse(
         ok=True,
         version=settings.version,
-        ffmpeg=shutil.which("ffmpeg") is not None,
-        chromium=True,  # lazy-install deferred
+        ffmpeg=_ffmpeg_available(),
+        chromium=_chromium_available(),
         providers=ProviderStatus(
             llm=llm_name,
             llm_ready=llm_ready,

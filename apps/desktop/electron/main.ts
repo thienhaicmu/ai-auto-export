@@ -78,7 +78,20 @@ app.whenReady().then(async () => {
     await sidecar.start()
   } catch (err) {
     console.error('[main] sidecar failed to start:', err)
-    // Continue anyway — dev may run backend separately
+    // In packaged mode, a missing backend exe is a fatal install error.
+    if (app.isPackaged) {
+      const msg = err instanceof Error ? err.message : String(err)
+      await dialog.showMessageBox({
+        type: 'error',
+        title: 'Backend Failed to Start',
+        message: 'The AI Video Factory backend could not be launched.',
+        detail: `${msg}\n\nTry reinstalling the application.`,
+        buttons: ['Quit'],
+      })
+      app.quit()
+      return
+    }
+    // Dev mode: continue anyway — developer may run backend separately
   }
 
   registerIpc()

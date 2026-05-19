@@ -1,4 +1,5 @@
 import logging
+import os
 import shutil
 import time
 from contextlib import asynccontextmanager
@@ -13,8 +14,16 @@ from app.api import health, ws, render, ideas
 
 log = logging.getLogger(__name__)
 
-_BACKEND_DIR = Path(__file__).parent.parent   # backend/
-_TEMP_ROOT   = _BACKEND_DIR / "temp"
+
+def _resolve_temp_root() -> Path:
+    # Packaged mode: APP_TEMP_DIR is set by Electron sidecar.ts
+    env_val = os.environ.get("APP_TEMP_DIR", "")
+    if env_val:
+        return Path(env_val)
+    return Path(__file__).parent.parent / "temp"   # backend/temp (dev mode)
+
+
+_TEMP_ROOT = _resolve_temp_root()
 
 
 def _cleanup_orphaned_temp(temp_root: Path, ttl_hours: int) -> None:

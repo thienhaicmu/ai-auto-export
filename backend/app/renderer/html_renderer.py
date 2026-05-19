@@ -23,6 +23,7 @@ import asyncio
 import json
 import logging
 import mimetypes
+import os
 import shutil
 from pathlib import Path
 from typing import Awaitable, Callable
@@ -36,13 +37,31 @@ log = logging.getLogger(__name__)
 _RENDERER_DIR = Path(__file__).parent           # backend/app/renderer/
 _BACKEND_APP_DIR = _RENDERER_DIR.parent         # backend/app/
 _BACKEND_DIR = _BACKEND_APP_DIR.parent          # backend/
-_PROJECT_ROOT = _BACKEND_DIR.parent             # d:\ai-auto-export\
+_PROJECT_ROOT = _BACKEND_DIR.parent             # project root (dev mode)
 
+# Templates live alongside this package — works both in dev and PyInstaller
+# (_MEIPASS bundles app/templates/ at the same relative path)
 _TEMPLATES_DIR = _BACKEND_APP_DIR / "templates"
-_ASSETS_DIR = _PROJECT_ROOT / "assets"
-# temp/ lives inside backend/ so that http://local/temp/... maps to the same
-# directory used by render.py (backend/temp/{job_id}/...)
-_TEMP_ROOT = _BACKEND_DIR / "temp"
+
+
+def _resolve_assets_dir() -> Path:
+    # Packaged mode: ASSETS_DIR is set by Electron sidecar.ts
+    env_val = os.environ.get("ASSETS_DIR", "")
+    if env_val:
+        return Path(env_val)
+    return _PROJECT_ROOT / "assets"  # dev mode
+
+
+def _resolve_temp_root() -> Path:
+    # Packaged mode: APP_TEMP_DIR is set by Electron sidecar.ts
+    env_val = os.environ.get("APP_TEMP_DIR", "")
+    if env_val:
+        return Path(env_val)
+    return _BACKEND_DIR / "temp"   # dev mode
+
+
+_ASSETS_DIR = _resolve_assets_dir()
+_TEMP_ROOT = _resolve_temp_root()
 
 # Fake origin used for routing; Playwright intercepts all requests to it
 _BASE_URL = "http://local"

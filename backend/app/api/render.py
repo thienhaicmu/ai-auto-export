@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import shutil
 import time
 import uuid
@@ -45,9 +46,16 @@ from app.renderer.music_selector import select_music
 router = APIRouter()
 log = logging.getLogger(__name__)
 
-# Pipeline temp root lives inside the backend directory (cwd when uvicorn runs)
-_BACKEND_DIR = Path(__file__).parent.parent.parent   # backend/
-_TEMP_ROOT = _BACKEND_DIR / "temp"
+
+def _resolve_temp_root() -> Path:
+    # Packaged mode: APP_TEMP_DIR is set by Electron sidecar.ts
+    env_val = os.environ.get("APP_TEMP_DIR", "")
+    if env_val:
+        return Path(env_val)
+    return Path(__file__).parent.parent.parent / "temp"   # backend/temp (dev mode)
+
+
+_TEMP_ROOT = _resolve_temp_root()
 
 
 # ── Request / Response schemas ───────────────────────────────────────────────

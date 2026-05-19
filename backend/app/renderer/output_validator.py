@@ -72,6 +72,13 @@ class QAResult:
 # ── ffprobe helper ────────────────────────────────────────────────────────────
 
 def _find_ffprobe() -> str | None:
+    # Packaged mode: FFMPEG_DIR is set by Electron sidecar.ts
+    from app.config import settings
+    if settings.ffmpeg_dir:
+        import os
+        bundled = Path(settings.ffmpeg_dir) / ("ffprobe.exe" if os.name == "nt" else "ffprobe")
+        if bundled.exists():
+            return str(bundled)
     return shutil.which("ffprobe")
 
 

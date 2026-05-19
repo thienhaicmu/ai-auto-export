@@ -39,10 +39,16 @@ _ENCODE_PRESETS: dict[str, dict] = {
 
 
 def _find_ffmpeg() -> str:
+    # Packaged mode: FFMPEG_DIR is set by Electron sidecar.ts
+    from app.config import settings
+    if settings.ffmpeg_dir:
+        bundled = Path(settings.ffmpeg_dir) / ("ffmpeg.exe" if shutil.os.name == "nt" else "ffmpeg")
+        if bundled.exists():
+            return str(bundled)
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError(
-            "ffmpeg not found in PATH. Install FFmpeg and ensure it is on PATH."
+            "ffmpeg not found. Set FFMPEG_DIR or install FFmpeg on PATH."
         )
     return ffmpeg
 

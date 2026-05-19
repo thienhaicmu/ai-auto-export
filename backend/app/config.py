@@ -34,9 +34,16 @@ class Settings(BaseSettings):
     ffmpeg_scene_encode_timeout: int = 180        # per-scene clip encode
     ffmpeg_final_encode_timeout: int = 600        # full final-encode step
 
-    # Paths
+    # Paths (dev-mode defaults — overridden by env vars in packaged mode)
     temp_dir: str = "temp"
     output_dir: str = "output"
+
+    # Packaging paths — set by Electron sidecar.ts before spawning sidecar.exe.
+    # Empty string means "not set" (fall back to dev-mode relative paths).
+    ffmpeg_dir: str = ""          # FFMPEG_DIR  — directory containing ffmpeg.exe / ffprobe.exe
+    assets_dir: str = ""          # ASSETS_DIR  — root assets/ directory
+    app_temp_dir: str = ""        # APP_TEMP_DIR — writable temp root (userData/temp)
+    app_log_dir: str = ""         # APP_LOG_DIR  — writable log dir  (userData/logs)
 
     # Cleanup
     temp_cleanup_ttl_hours: int = 24   # orphaned temp dirs older than this are deleted on startup
